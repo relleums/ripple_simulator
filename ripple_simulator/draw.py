@@ -7,8 +7,8 @@ RM_PX = 16
 RELAY_WIDTH_PX = 32
 RELAY_HEIGHT_PX = 2 * RELAY_WIDTH_PX
 
-GRID_WIDTH_Y = 32
-GRID_WIDTH_X = 32
+GRID_WIDTH_Y = 48
+GRID_WIDTH_X = 48
 GRID_START_X = 3
 GRID_START_Y = 3
 
@@ -43,9 +43,6 @@ def add_capacitor(dwg, pos=[10, 10], capacity=40, state=20):
     )
 
 
-
-
-
 def add_relay(
     dwg,
     pos=[10, 10],
@@ -56,6 +53,8 @@ def add_relay(
     power_out_lower=0,
     stroke_width=2.0,
     stroke="black",
+    num_steps_since_power_off=0,
+    num_steps_before_off=0,
 ):
 
     x = pos[0]
@@ -198,6 +197,17 @@ def add_relay(
         )
     )
 
+    if num_steps_before_off > 0:
+        dwg.add(
+            dwg.text(
+                "{:d}/{:d}".format(
+                    num_steps_since_power_off, num_steps_before_off
+                ),
+                grid_xy(x + 1.5, y - 1.5),
+                font_size=0.5 * RM_PX,
+            )
+        )
+
 
 def add_grid(
     dwg, size=[GRID_WIDTH_X, GRID_WIDTH_Y], stroke="gray", stroke_width=0.3
@@ -335,7 +345,7 @@ def add_label_node(dwg, pos, name, stroke_width=2.0, stroke="black"):
 
 def add_curcuit(dwg, circuit, circuit_state):
     cir = circuit
-    add_grid(dwg=dwg)
+    add_grid(dwg=dwg, size=[128, 64])
 
     for bar_idx, bar in enumerate(cir["bars"]):
         start = cir["nodes"][bar[0]]["pos"]
@@ -358,7 +368,15 @@ def add_curcuit(dwg, circuit, circuit_state):
     for relay_key in cir["relays"]:
         relay = cir["relays"][relay_key]
         add_relay(
-            dwg=dwg, pos=relay["pos"], state=circuit_state["relays"][relay_key]
+            dwg=dwg,
+            pos=relay["pos"],
+            state=circuit_state["relays"][relay_key],
+            num_steps_before_off=circuit_state["relay_times"][relay_key][
+                "num_steps_before_off"
+            ],
+            num_steps_since_power_off=circuit_state["relay_times"][relay_key][
+                "num_steps_since_power_off"
+            ],
         )
 
         for terminal_key in RELAY_TERMINALS:
@@ -369,6 +387,14 @@ def add_curcuit(dwg, circuit, circuit_state):
                     pos=cir["nodes"][node_key]["pos"],
                     power=circuit_state["nodes"][node_key],
                 )
+
+    for label_key in cir["labels"]:
+        add_label_node(
+            dwg=dwg,
+            pos=cir["labels"][label_key]["pos"],
+            name=cir["labels"][label_key]["name"],
+        )
+
 
 
 def draw_circuit(path, circuit, circuit_state):

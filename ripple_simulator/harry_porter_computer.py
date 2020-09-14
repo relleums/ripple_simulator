@@ -4,6 +4,7 @@ def make_register(num_bits=8):
     cir["nodes"] = {}
 
     cir["bars"] = []
+    cir["labels"] = {}
 
     x = 8
     y = 2

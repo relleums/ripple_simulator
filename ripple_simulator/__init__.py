@@ -103,6 +103,7 @@ def compile(circuit):
         "relays": relays,
         "nodes": nodes,
         "bars": list(circuit["bars"]),
+        "labels": dict(circuit["labels"]),
         "meshes_of_equal_potential": meshes_of_equal_potential,
     }
 
@@ -120,7 +121,9 @@ def compile_relay_meshes(circuit):
     for relay_key in circuit["relays"]:
         relays[relay_key] = {}
         relays[relay_key]["state"] = 0
-        relays[relay_key]["num_steps_before_off"] = circuit["relays"][relay_key]["num_steps_before_off"]
+        relays[relay_key]["num_steps_before_off"] = circuit["relays"][
+            relay_key
+        ]["num_steps_before_off"]
         relays[relay_key]["num_steps_since_power_off"] = 0
 
         in_key = "relays" + "/" + relay_key + "/" + "in"
@@ -151,6 +154,15 @@ def compile_circuit_state(circuit, relays, meshes_on_power):
         relay_states[relay_key] = relays[relay_key]["state"]
     circuit_state["relays"] = relay_states
 
+    relay_times = {}
+    for relay_key in relays:
+        relay_times[relay_key] = {
+            "num_steps_before_off": relays[relay_key]["num_steps_before_off"],
+            "num_steps_since_power_off": relays[relay_key][
+                "num_steps_since_power_off"
+            ],
+        }
+
     node_states = {}
     for mesh_idx, mesh in enumerate(circuit["meshes_of_equal_potential"]):
 
@@ -171,6 +183,7 @@ def compile_circuit_state(circuit, relays, meshes_on_power):
                 bar_state[bar_idx] = 1
 
     circuit_state["relays"] = relay_states
+    circuit_state["relay_times"] = relay_times
     circuit_state["nodes"] = node_states
     circuit_state["bars"] = bar_state
     return circuit_state
