@@ -28,7 +28,35 @@ RELAY_TERMINALS = {
 }
 
 
-def add_relay(dwg, pos=[10, 10], state=0, stroke_width=2.0, stroke="black"):
+def add_capacitor(dwg, pos=[10, 10], capacity=40, state=20):
+    x = pos[0]
+    y = pos[1]
+
+    # terminal
+    dwg.add(
+        dwg.line(
+            grid_xy(x, y),
+            grid_xy(x + 1, y),
+            stroke=stroke,
+            stroke_width=stroke_width,
+        )
+    )
+
+
+
+
+
+def add_relay(
+    dwg,
+    pos=[10, 10],
+    state=0,
+    power_coil=0,
+    power_in=0,
+    power_out_upper=0,
+    power_out_lower=0,
+    stroke_width=2.0,
+    stroke="black",
+):
 
     x = pos[0]
     y = pos[1]
@@ -71,6 +99,15 @@ def add_relay(dwg, pos=[10, 10], state=0, stroke_width=2.0, stroke="black"):
 
     # terminals
     # =========
+    if power_coil == 1:
+        dwg.add(
+            dwg.line(
+                grid_xy(x + 0, y + 0),
+                grid_xy(x + 1.5, y + 0),
+                stroke="red",
+                stroke_width=2 * stroke_width,
+            )
+        )
     dwg.add(
         dwg.line(
             grid_xy(x + 0, y + 0),
@@ -79,6 +116,16 @@ def add_relay(dwg, pos=[10, 10], state=0, stroke_width=2.0, stroke="black"):
             stroke_width=stroke_width,
         )
     )
+
+    if power_in == 1:
+        dwg.add(
+            dwg.line(
+                grid_xy(x + 0, y + 2),
+                grid_xy(x + 1.5, y + 2),
+                stroke="red",
+                stroke_width=2 * stroke_width,
+            )
+        )
     dwg.add(
         dwg.line(
             grid_xy(x + 0, y + 2),
@@ -88,6 +135,15 @@ def add_relay(dwg, pos=[10, 10], state=0, stroke_width=2.0, stroke="black"):
         )
     )
 
+    if power_out_lower == 1:
+        dwg.add(
+            dwg.line(
+                grid_xy(x + 2.5, y + 1),
+                grid_xy(x + 4, y + 1),
+                stroke="red",
+                stroke_width=2 * stroke_width,
+            )
+        )
     dwg.add(
         dwg.line(
             grid_xy(x + 2.5, y + 1),
@@ -96,6 +152,16 @@ def add_relay(dwg, pos=[10, 10], state=0, stroke_width=2.0, stroke="black"):
             stroke_width=stroke_width,
         )
     )
+
+    if power_out_upper == 1:
+        dwg.add(
+            dwg.line(
+                grid_xy(x + 2.5, y + 3),
+                grid_xy(x + 4, y + 3),
+                stroke="red",
+                stroke_width=2 * stroke_width,
+            )
+        )
     dwg.add(
         dwg.line(
             grid_xy(x + 2.5, y + 3),
@@ -110,7 +176,7 @@ def add_relay(dwg, pos=[10, 10], state=0, stroke_width=2.0, stroke="black"):
         coil_fill = "white"
     else:
         Y = 1
-        coil_fill = "black"
+        coil_fill = "red"
 
     dwg.add(
         dwg.line(
@@ -173,7 +239,18 @@ def add_grid(
         dwg.add(dwg.text("Y", grid_xy(-1, size[1] + 1)))
 
 
-def add_bar(dwg, start=(0, 0), stop=(1, 1), stroke_width=2.0, stroke="black"):
+def add_bar(
+    dwg, start=(0, 0), stop=(1, 1), stroke_width=2.0, stroke="black", power=0
+):
+    if power == 1:
+        dwg.add(
+            dwg.line(
+                grid_xy(start[0], start[1]),
+                grid_xy(stop[0], stop[1]),
+                stroke="red",
+                stroke_width=stroke_width * 2,
+            )
+        )
     dwg.add(
         dwg.line(
             grid_xy(start[0], start[1]),
@@ -184,11 +261,22 @@ def add_bar(dwg, start=(0, 0), stop=(1, 1), stroke_width=2.0, stroke="black"):
     )
 
 
-def add_node(dwg, pos=(0, 0), stroke_width=0.0, stroke="black"):
+def add_node(dwg, pos=(0, 0), stroke_width=0.0, stroke="black", power=0):
+    node_radius = 0.3 * RM_PX
+    if power == 1:
+        dwg.add(
+            dwg.circle(
+                grid_xy(pos[0], pos[1]),
+                1.3 * node_radius,
+                stroke=stroke,
+                stroke_width=stroke_width,
+                fill="red",
+            )
+        )
     dwg.add(
         dwg.circle(
             grid_xy(pos[0], pos[1]),
-            0.3 * RM_PX,
+            node_radius,
             stroke=stroke,
             stroke_width=stroke_width,
             fill=stroke,
@@ -245,30 +333,45 @@ def add_label_node(dwg, pos, name, stroke_width=2.0, stroke="black"):
     dwg.add(dwg.text(name, grid_xy(x - w, y)))
 
 
-def add_curcuit(dwg, circuit_stage_B):
-    cir = circuit_stage_B
+def add_curcuit(dwg, circuit, circuit_state):
+    cir = circuit
     add_grid(dwg=dwg)
 
-    for bar in cir["bars"]:
+    for bar_idx, bar in enumerate(cir["bars"]):
         start = cir["nodes"][bar[0]]["pos"]
         stop = cir["nodes"][bar[1]]["pos"]
-        add_bar(dwg=dwg, start=start, stop=stop)
+        add_bar(
+            dwg=dwg,
+            start=start,
+            stop=stop,
+            power=circuit_state["bars"][bar_idx],
+        )
 
     for node_key in cir["nodes"]:
         if len(cir["nodes"][node_key]["bars"]) > 2:
-            add_node(dwg=dwg, pos=cir["nodes"][node_key]["pos"])
+            add_node(
+                dwg=dwg,
+                pos=cir["nodes"][node_key]["pos"],
+                power=circuit_state["nodes"][node_key],
+            )
 
     for relay_key in cir["relays"]:
         relay = cir["relays"][relay_key]
-        add_relay(dwg=dwg, pos=relay["pos"], state=0)
+        add_relay(
+            dwg=dwg, pos=relay["pos"], state=circuit_state["relays"][relay_key]
+        )
 
         for terminal_key in RELAY_TERMINALS:
             node_key = "relays" + "/" + relay_key + "/" + terminal_key
             if len(cir["nodes"][node_key]["bars"]) > 1:
-                add_node(dwg=dwg, pos=cir["nodes"][node_key]["pos"])
+                add_node(
+                    dwg=dwg,
+                    pos=cir["nodes"][node_key]["pos"],
+                    power=circuit_state["nodes"][node_key],
+                )
 
 
-def draw_circuit(path, circuit_stage_B):
+def draw_circuit(path, circuit, circuit_state):
     dwg = svgwrite.Drawing(path, profile="tiny")
-    add_curcuit(dwg=dwg, circuit_stage_B=circuit_stage_B)
+    add_curcuit(dwg=dwg, circuit=circuit, circuit_state=circuit_state)
     dwg.save()

@@ -93,8 +93,14 @@ def compile(circuit):
     )
     meshes_of_equal_potential = find_all_meshes_of_equal_potential(nodes=nodes)
 
+    relays = {}
+    for relay_key in circuit["relays"]:
+        relays[relay_key] = circuit["relays"][relay_key]
+        if "num_steps_before_off" not in relays[relay_key]:
+            relays[relay_key]["num_steps_before_off"] = 0
+
     return {
-        "relays": dict(circuit["relays"]),
+        "relays": relays,
         "nodes": nodes,
         "bars": list(circuit["bars"]),
         "meshes_of_equal_potential": meshes_of_equal_potential,
@@ -114,6 +120,8 @@ def compile_relay_meshes(circuit):
     for relay_key in circuit["relays"]:
         relays[relay_key] = {}
         relays[relay_key]["state"] = 0
+        relays[relay_key]["num_steps_before_off"] = circuit["relays"][relay_key]["num_steps_before_off"]
+        relays[relay_key]["num_steps_since_power_off"] = 0
 
         in_key = "relays" + "/" + relay_key + "/" + "in"
         outl_key = "relays" + "/" + relay_key + "/" + "out_lower"
@@ -132,3 +140,37 @@ def compile_relay_meshes(circuit):
                     relays[relay_key]["coil_mesh"] = meshidx
 
     return meshes, relays
+
+
+def compile_circuit_state(circuit, relays, meshes_on_power):
+
+    circuit_state = {}
+
+    relay_states = {}
+    for relay_key in relays:
+        relay_states[relay_key] = relays[relay_key]["state"]
+    circuit_state["relays"] = relay_states
+
+    node_states = {}
+    for mesh_idx, mesh in enumerate(circuit["meshes_of_equal_potential"]):
+
+        if mesh_idx in meshes_on_power:
+            mesh_state = 1
+        else:
+            mesh_state = 0
+
+        for node_key in mesh:
+            node_states[node_key] = mesh_state
+
+    bar_state = []
+    for bar_idx in range(len(circuit["bars"])):
+        bar_state.append(0)
+    for node_key in circuit["nodes"]:
+        for bar_idx in circuit["nodes"][node_key]["bars"]:
+            if node_states[node_key] == 1:
+                bar_state[bar_idx] = 1
+
+    circuit_state["relays"] = relay_states
+    circuit_state["nodes"] = node_states
+    circuit_state["bars"] = bar_state
+    return circuit_state

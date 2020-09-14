@@ -1,5 +1,3 @@
-
-
 def find_relay_keys_in_mesh(mesh):
     relay_keys = set()
     for node_key in mesh:
@@ -10,11 +8,16 @@ def find_relay_keys_in_mesh(mesh):
 
 def update_relay_states(meshes_on_power, relays):
     for relay_key in relays:
-        relay_coil_mesh_idx = relays[relay_key]["coil_mesh"]
+        rel = relays[relay_key]
+        relay_coil_mesh_idx = rel["coil_mesh"]
         if relay_coil_mesh_idx in meshes_on_power:
-            relays[relay_key]["state"] = 1
+            rel["state"] = 1
+            rel["num_steps_since_power_off"] = 0
         else:
-            relays[relay_key]["state"] = 0
+            if rel["num_steps_since_power_off"] == rel["num_steps_before_off"]:
+                rel["state"] = 0
+            else:
+                rel["num_steps_since_power_off"] += 1
     return relays
 
 
