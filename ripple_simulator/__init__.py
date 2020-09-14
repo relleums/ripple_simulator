@@ -1,43 +1,37 @@
+from . import simulate
 from . import draw
 from . import harry_porter_computer
 
 
-def _precompile_circuit(circuit):
+def copy_and_expand_node_names(nodes):
+    out_nodes = {}
+    for node_key in nodes:
+        out_nodes["nodes" + "/" + node_key] = nodes[node_key]
+    return out_nodes
 
-    nodes = {}
-    for node_key in circuit["nodes"]:
-        nodes["node" + "/" + node_key] = circuit["nodes"][node_key]
 
-    for relay_key in circuit["relays"]:
+def copy_and_expand_relay_node_names(relays):
+    relay_nodes = {}
+    for relay_key in relays:
         for relay_terminal_key in draw.RELAY_TERMINALS:
-            name = "relay" + "/" + relay_key + "/" + relay_terminal_key
-            relay = circuit["relays"][relay_key]
+            name = "relays" + "/" + relay_key + "/" + relay_terminal_key
+            relay = relays[relay_key]
             terminal = draw.RELAY_TERMINALS[relay_terminal_key]
             pos_x = relay["pos"][0] + terminal["pos"][0]
             pos_y = relay["pos"][1] + terminal["pos"][1]
-            nodes[name] = {"pos": [pos_x, pos_y]}
+            relay_nodes[name] = {"pos": [pos_x, pos_y]}
+    return relay_nodes
 
+
+def add_bar_references_to_nodes(nodes, bars):
     for node_key in nodes:
         nodes[node_key]["bars"] = []
-    for bar_idx, bar in enumerate(circuit["bars"]):
+    for bar_idx, bar in enumerate(bars):
         start_node_key = bar[0]
         stop_node_key = bar[1]
         nodes[start_node_key]["bars"].append(bar_idx)
         nodes[stop_node_key]["bars"].append(bar_idx)
-
-    relays = {}
-    for relay_key in circuit["relays"]:
-        relays[relay_key] = circuit["relays"][relay_key]
-
-    bars = []
-    for bar in circuit["bars"]:
-        bars.append(bar)
-
-    return {
-        "relays": relays,
-        "nodes": nodes,
-        "bars": bars,
-    }
+    return nodes
 
 
 def find_opposite_node(bar, node_key):
@@ -61,40 +55,80 @@ def walk_nodes_of_equal_potential(
             )
 
 
-def compile(circuit):
-    cir = _precompile_circuit(circuit=circuit)
-
-    # find direct neighbor nodes
-    # --------------------------
-    for node_key in cir["nodes"]:
+def add_direct_neighbor_references_to_nodes(nodes, bars):
+    for node_key in nodes:
         neighbors = set()
-        for bar_idx in cir["nodes"][node_key]["bars"]:
-            op_node = find_opposite_node(
-                bar=cir["bars"][bar_idx], node_key=node_key
-            )
+        for bar_idx in nodes[node_key]["bars"]:
+            op_node = find_opposite_node(bar=bars[bar_idx], node_key=node_key)
             neighbors.add(op_node)
-        cir["nodes"][node_key]["neighbors"] = list(neighbors)
+        nodes[node_key]["neighbors"] = list(neighbors)
+    return nodes
 
-    # copy input
-    # ----------
-    cpy_nodes = {}
-    for node_key in cir["nodes"]:
-        cpy_nodes[node_key] = cir["nodes"][node_key]
 
-    # walk
-    # ----
+def find_all_meshes_of_equal_potential(nodes):
+    cpy_nodes = dict(nodes)
+
     meshes_of_equal_potential = []
     while len(cpy_nodes) > 0:
         noep = set()
         seed_node_key = list(cpy_nodes.keys())[0]
-
         walk_nodes_of_equal_potential(
             nodes_of_equal_potential=noep,
             seed_node_key=seed_node_key,
             cpy_nodes=cpy_nodes,
         )
-
         meshes_of_equal_potential.append(list(noep))
 
-    cir["meshes_of_equal_potential"] = meshes_of_equal_potential
-    return cir
+    return meshes_of_equal_potential
+
+
+def compile(circuit):
+    nodes = copy_and_expand_node_names(nodes=circuit["nodes"])
+    relay_nodes = copy_and_expand_relay_node_names(relays=circuit["relays"])
+    nodes.update(relay_nodes)
+    nodes = add_bar_references_to_nodes(nodes=nodes, bars=circuit["bars"])
+
+    nodes = add_direct_neighbor_references_to_nodes(
+        nodes=nodes, bars=circuit["bars"]
+    )
+    meshes_of_equal_potential = find_all_meshes_of_equal_potential(nodes=nodes)
+
+    return {
+        "relays": dict(circuit["relays"]),
+        "nodes": nodes,
+        "bars": list(circuit["bars"]),
+        "meshes_of_equal_potential": meshes_of_equal_potential,
+    }
+
+
+def compile_relay_meshes(circuit):
+    meshes = []
+    for mesh in circuit["meshes_of_equal_potential"]:
+        relay_mesh = []
+        for node_key in mesh:
+            if "relays" in node_key:
+                relay_mesh.append(node_key)
+        meshes.append(relay_mesh)
+
+    relays = {}
+    for relay_key in circuit["relays"]:
+        relays[relay_key] = {}
+        relays[relay_key]["state"] = 0
+
+        in_key = "relays" + "/" + relay_key + "/" + "in"
+        outl_key = "relays" + "/" + relay_key + "/" + "out_lower"
+        outu_key = "relays" + "/" + relay_key + "/" + "out_upper"
+        coil_key = "relays" + "/" + relay_key + "/" + "coil"
+
+        for meshidx, mesh in enumerate(meshes):
+            for node_key in mesh:
+                if node_key == in_key:
+                    relays[relay_key]["in_mesh"] = meshidx
+                if node_key == outl_key:
+                    relays[relay_key]["out_lower_mesh"] = meshidx
+                if node_key == outu_key:
+                    relays[relay_key]["out_upper_mesh"] = meshidx
+                if node_key == coil_key:
+                    relays[relay_key]["coil_mesh"] = meshidx
+
+    return meshes, relays

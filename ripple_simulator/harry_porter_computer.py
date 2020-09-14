@@ -25,29 +25,29 @@ def make_register(num_bits=8):
 
     for bit in range(num_bits - 1):
         cir["bars"].append(
-            ("node/hold_{:d}".format(bit), "node/hold_{:d}".format(bit + 1),)
+            ("nodes/hold_{:d}".format(bit), "nodes/hold_{:d}".format(bit + 1),)
         )
     for bit in range(num_bits):
         cir["bars"].append(
             (
-                "node/hold_{:d}".format(bit),
-                "relay/bit_{:d}/out_upper".format(bit),
+                "nodes/hold_{:d}".format(bit),
+                "relays/bit_{:d}/out_upper".format(bit),
             )
         )
 
     for bit in range(num_bits):
         cir["bars"].append(
             (
-                "relay/bit_{:d}/in".format(bit),
-                "relay/bit_{:d}/coil".format(bit),
+                "relays/bit_{:d}/in".format(bit),
+                "relays/bit_{:d}/coil".format(bit),
             )
         )
 
     for bit in range(num_bits):
         cir["bars"].append(
             (
-                "relay/bit_{:d}/coil".format(bit),
-                "relay/enable_{:d}/in".format(bit),
+                "relays/bit_{:d}/coil".format(bit),
+                "relays/enable_{:d}/in".format(bit),
             )
         )
 
@@ -59,8 +59,8 @@ def make_register(num_bits=8):
     for bit in range(num_bits):
         cir["bars"].append(
             (
-                "relay/enable_{:d}/out_upper".format(bit),
-                "node/en_{:d}_a".format(bit),
+                "relays/enable_{:d}/out_upper".format(bit),
+                "nodes/en_{:d}_a".format(bit),
             )
         )
 
@@ -70,7 +70,7 @@ def make_register(num_bits=8):
         }
     for bit in range(num_bits):
         cir["bars"].append(
-            ("node/en_{:d}_a".format(bit), "node/bus_bit_{:d}".format(bit),)
+            ("nodes/en_{:d}_a".format(bit), "nodes/bus_bit_{:d}".format(bit),)
         )
     for bit in range(num_bits):
         cir["nodes"]["bus_bit_{:d}_start".format(bit)] = {
@@ -79,8 +79,8 @@ def make_register(num_bits=8):
     for bit in range(num_bits):
         cir["bars"].append(
             (
-                "node/bus_bit_{:d}_start".format(bit),
-                "node/bus_bit_{:d}".format(bit),
+                "nodes/bus_bit_{:d}_start".format(bit),
+                "nodes/bus_bit_{:d}".format(bit),
             )
         )
     for bit in range(num_bits):
@@ -90,8 +90,8 @@ def make_register(num_bits=8):
     for bit in range(num_bits):
         cir["bars"].append(
             (
-                "node/bus_bit_{:d}".format(bit),
-                "node/bus_bit_{:d}_end".format(bit),
+                "nodes/bus_bit_{:d}".format(bit),
+                "nodes/bus_bit_{:d}_end".format(bit),
             )
         )
 
@@ -102,19 +102,22 @@ def make_register(num_bits=8):
     for bit in range(num_bits):
         cir["bars"].append(
             (
-                "relay/enable_{:d}/coil".format(bit),
-                "node/en_{:d}_in".format(bit),
+                "relays/enable_{:d}/coil".format(bit),
+                "nodes/en_{:d}_in".format(bit),
             )
         )
     for bit in range(num_bits - 1):
         cir["bars"].append(
-            ("node/en_{:d}_in".format(bit), "node/en_{:d}_in".format(bit + 1))
+            (
+                "nodes/en_{:d}_in".format(bit),
+                "nodes/en_{:d}_in".format(bit + 1),
+            )
         )
 
     cir["nodes"]["enable"] = {"pos": [x + 1, y + 10]}
-    cir["bars"].append(("node/enable", "node/en_0_in"))
+    cir["bars"].append(("nodes/enable", "nodes/en_0_in"))
 
     cir["nodes"]["hold"] = {"pos": [x + 1, y + 23]}
-    cir["bars"].append(("node/hold", "node/hold_0"))
+    cir["bars"].append(("nodes/hold", "nodes/hold_0"))
 
     return cir

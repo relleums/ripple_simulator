@@ -263,7 +263,7 @@ def add_curcuit(dwg, circuit_stage_B):
         add_relay(dwg=dwg, pos=relay["pos"], state=0)
 
         for terminal_key in RELAY_TERMINALS:
-            node_key = "relay" + "/" + relay_key + "/" + terminal_key
+            node_key = "relays" + "/" + relay_key + "/" + terminal_key
             if len(cir["nodes"][node_key]["bars"]) > 1:
                 add_node(dwg=dwg, pos=cir["nodes"][node_key]["pos"])
 
