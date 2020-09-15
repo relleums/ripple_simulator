@@ -23,6 +23,13 @@ def copy_and_expand_relay_node_names(relays):
     return relay_nodes
 
 
+def copy_and_expand_capacitor_names(capacitors):
+    out_caps = {}
+    for cap_key in capacitors:
+        out_caps["capacitors" + "/" + cap_key] = capacitors[cap_key]
+    return out_caps
+
+
 def add_bar_references_to_nodes(nodes, bars):
     for node_key in nodes:
         nodes[node_key]["bars"] = []
@@ -86,6 +93,11 @@ def compile(circuit):
     nodes = copy_and_expand_node_names(nodes=circuit["nodes"])
     relay_nodes = copy_and_expand_relay_node_names(relays=circuit["relays"])
     nodes.update(relay_nodes)
+
+    capacitor_nodes = copy_and_expand_capacitor_names(
+        capacitors=circuit["capacitors"]
+    )
+    nodes.update(capacitor_nodes)
     nodes = add_bar_references_to_nodes(nodes=nodes, bars=circuit["bars"])
 
     nodes = add_direct_neighbor_references_to_nodes(
@@ -93,14 +105,9 @@ def compile(circuit):
     )
     meshes_of_equal_potential = find_all_meshes_of_equal_potential(nodes=nodes)
 
-    relays = {}
-    for relay_key in circuit["relays"]:
-        relays[relay_key] = circuit["relays"][relay_key]
-        if "num_steps_before_off" not in relays[relay_key]:
-            relays[relay_key]["num_steps_before_off"] = 0
-
     return {
-        "relays": relays,
+        "relays": dict(circuit["relays"]),
+        "capacitors": dict(circuit["capacitors"]),
         "nodes": nodes,
         "bars": list(circuit["bars"]),
         "meshes_of_equal_potential": meshes_of_equal_potential,
@@ -112,18 +119,14 @@ def compile_relay_meshes(circuit):
     for mesh in circuit["meshes_of_equal_potential"]:
         relay_mesh = []
         for node_key in mesh:
-            if "relays" in node_key:
+            if "relays" in node_key or "capacitors" in node_key:
                 relay_mesh.append(node_key)
         meshes.append(relay_mesh)
 
     relays = {}
     for relay_key in circuit["relays"]:
         relays[relay_key] = {}
-        relays[relay_key]["state"] = 0
-        relays[relay_key]["num_steps_before_off"] = circuit["relays"][
-            relay_key
-        ]["num_steps_before_off"]
-        relays[relay_key]["num_steps_since_power_off"] = 0
+        relays[relay_key]["state"] = simulate.STATE_FULLY_OFF
 
         in_key = "relays" + "/" + relay_key + "/" + "in"
         outl_key = "relays" + "/" + relay_key + "/" + "out_lower"
@@ -141,10 +144,24 @@ def compile_relay_meshes(circuit):
                 if node_key == coil_key:
                     relays[relay_key]["coil_mesh"] = meshidx
 
-    return meshes, relays
+    capacitors = {}
+    for cap_key in circuit["capacitors"]:
+        capacitors[cap_key] = {}
+        capacitors[cap_key]["state"] = 0
+        capacitors[cap_key]["capacity"] = circuit["capacitors"][cap_key][
+            "capacity"
+        ]
+
+        caps_node_key = "capacitors/" + cap_key
+        for meshidx, mesh in enumerate(meshes):
+            for node_key in mesh:
+                if node_key == caps_node_key:
+                    capacitors[cap_key]["mesh"] = meshidx
+
+    return meshes, relays, capacitors
 
 
-def compile_circuit_state(circuit, relays, meshes_on_power):
+def compile_circuit_state(circuit, relays, capacitors, meshes_on_power):
 
     circuit_state = {}
 
@@ -152,15 +169,6 @@ def compile_circuit_state(circuit, relays, meshes_on_power):
     for relay_key in relays:
         relay_states[relay_key] = relays[relay_key]["state"]
     circuit_state["relays"] = relay_states
-
-    relay_times = {}
-    for relay_key in relays:
-        relay_times[relay_key] = {
-            "num_steps_before_off": relays[relay_key]["num_steps_before_off"],
-            "num_steps_since_power_off": relays[relay_key][
-                "num_steps_since_power_off"
-            ],
-        }
 
     node_states = {}
     for mesh_idx, mesh in enumerate(circuit["meshes_of_equal_potential"]):
@@ -181,8 +189,12 @@ def compile_circuit_state(circuit, relays, meshes_on_power):
             if node_states[node_key] == 1:
                 bar_state[bar_idx] = 1
 
+    capacitors_state = {}
+    for cap_key in capacitors:
+        capacitors_state[cap_key] = capacitors[cap_key]["state"]
+
     circuit_state["relays"] = relay_states
-    circuit_state["relay_times"] = relay_times
+    circuit_state["capacitors"] = capacitors_state
     circuit_state["nodes"] = node_states
     circuit_state["bars"] = bar_state
     return circuit_state
@@ -205,6 +217,14 @@ def translate(circuit, pos=[0, 0]):
         relay["pos"][0] += pos[0]
         relay["pos"][1] += pos[1]
         out["relays"][relay_key] = relay
+
+    out["capacitors"] = {}
+    for cap_key in circuit["capacitors"]:
+        cap = dict(circuit["capacitors"][cap_key])
+        cap["pos"][0] += pos[0]
+        cap["pos"][1] += pos[1]
+        out["capacitors"][cap_key] = cap
+
     return out
 
 
@@ -215,6 +235,11 @@ def add_group_name(circuit, name):
     for key in circuit["relays"]:
         out_key = name + "_" + key
         out["relays"][out_key] = dict(circuit["relays"][key])
+
+    out["capacitors"] = {}
+    for key in circuit["capacitors"]:
+        out_key = name + "_" + key
+        out["capacitors"][out_key] = dict(circuit["capacitors"][key])
 
     out["nodes"] = {}
     for key in circuit["nodes"]:
@@ -240,6 +265,7 @@ def add_group_name(circuit, name):
 def merge_circuits(circuits=[]):
     out = {}
     out["relays"] = {}
+    out["capacitors"] = {}
     out["nodes"] = {}
     out["bars"] = []
 
@@ -247,6 +273,9 @@ def merge_circuits(circuits=[]):
 
         for key in circuit["relays"]:
             out["relays"][key] = dict(circuit["relays"][key])
+
+        for key in circuit["capacitors"]:
+            out["capacitors"][key] = dict(circuit["capacitors"][key])
 
         for key in circuit["nodes"]:
             out["nodes"][key] = dict(circuit["nodes"][key])

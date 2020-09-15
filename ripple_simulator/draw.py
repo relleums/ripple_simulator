@@ -1,6 +1,7 @@
 import numpy as np
 import json
 import svgwrite
+from . import simulate
 
 
 RM_PX = 16
@@ -38,8 +39,6 @@ def add_relay(
     power_out_lower=0,
     stroke_width=2.0,
     stroke="black",
-    num_steps_since_power_off=0,
-    num_steps_before_off=0,
 ):
 
     x = pos[0]
@@ -155,12 +154,16 @@ def add_relay(
         )
     )
 
-    if state == 0:
+    if state < simulate.STATE_OFF_LT:
         Y = -1
         coil_fill = "white"
-    else:
+    elif state > simulate.STATE_ON_GT:
         Y = 1
         coil_fill = "red"
+    else:
+        num_floating_states = simulate.STATE_ON_GT - simulate.STATE_OFF_LT
+        Y = (state - simulate.STATE_OFF_LT) / num_floating_states - 0.5
+        coil_fill = "orange"
 
     dwg.add(
         dwg.line(
@@ -182,21 +185,23 @@ def add_relay(
         )
     )
 
-    if num_steps_before_off > 0:
-        dwg.add(
-            dwg.text(
-                "{:d}/{:d}".format(
-                    num_steps_since_power_off, num_steps_before_off
-                ),
-                grid_xy(x + 1.5, y - 1.5),
-                font_size=0.5 * RM_PX,
-            )
-        )
-
 
 def add_grid(
-    dwg, size=[GRID_WIDTH_X, GRID_WIDTH_Y], stroke="gray", stroke_width=0.3
+    dwg,
+    size=[GRID_WIDTH_X, GRID_WIDTH_Y],
+    stroke="gray",
+    stroke_width=0.3,
+    fill="white",
 ):
+    dwg.add(
+        dwg.rect(
+            (0, 0),
+            (size[0] * RM_PX, size[1] * RM_PX),
+            stroke="none",
+            stroke_width=0,
+            fill=fill,
+        )
+    )
     for xl in range(size[0]):
         if xl % 10 == 0:
             xw = stroke_width
@@ -250,6 +255,59 @@ def add_bar(
         dwg.line(
             grid_xy(start[0], start[1]),
             grid_xy(stop[0], stop[1]),
+            stroke=stroke,
+            stroke_width=stroke_width,
+        )
+    )
+
+
+def add_capacitor(
+    dwg, pos=[0, 0], capacity=10, state=5, stroke_width=2.0, stroke="black"
+):
+    x = pos[0]
+    y = pos[1]
+
+    fill = state / capacity
+    if fill > 1.0:
+        fill = 1.0
+
+    dwg.add(
+        dwg.rect(
+            grid_xy(x - 1, y - 0.5),
+            (2 * RM_PX * fill, RM_PX * 1),
+            stroke="none",
+            stroke_width=0,
+            fill="red",
+        )
+    )
+    dwg.add(
+        dwg.line(
+            grid_xy(x, y),
+            grid_xy(x, y - 0.5),
+            stroke=stroke,
+            stroke_width=stroke_width,
+        )
+    )
+    dwg.add(
+        dwg.line(
+            grid_xy(x - 1, y - 0.5),
+            grid_xy(x + 1, y - 0.5),
+            stroke=stroke,
+            stroke_width=stroke_width,
+        )
+    )
+    dwg.add(
+        dwg.line(
+            grid_xy(x - 1, y - 1.5),
+            grid_xy(x + 1, y - 1.5),
+            stroke=stroke,
+            stroke_width=stroke_width,
+        )
+    )
+    dwg.add(
+        dwg.line(
+            grid_xy(x, y - 1.5),
+            grid_xy(x, y - 2),
             stroke=stroke,
             stroke_width=stroke_width,
         )
@@ -356,19 +414,12 @@ def add_curcuit(dwg, circuit, circuit_state):
                 name=cir["nodes"][node_key]["name"],
             )
 
-
     for relay_key in cir["relays"]:
         relay = cir["relays"][relay_key]
         add_relay(
             dwg=dwg,
             pos=relay["pos"],
             state=circuit_state["relays"][relay_key],
-            num_steps_before_off=circuit_state["relay_times"][relay_key][
-                "num_steps_before_off"
-            ],
-            num_steps_since_power_off=circuit_state["relay_times"][relay_key][
-                "num_steps_since_power_off"
-            ],
         )
 
         for terminal_key in RELAY_TERMINALS:
@@ -379,6 +430,14 @@ def add_curcuit(dwg, circuit, circuit_state):
                     pos=cir["nodes"][node_key]["pos"],
                     power=circuit_state["nodes"][node_key],
                 )
+
+    for cap_key in cir["capacitors"]:
+        add_capacitor(
+            dwg=dwg,
+            pos=cir["capacitors"][cap_key]["pos"],
+            state=circuit_state["capacitors"][cap_key],
+            capacity=circuit["capacitors"][cap_key]["capacity"],
+        )
 
 
 def draw_circuit(path, circuit, circuit_state):
