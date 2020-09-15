@@ -28,21 +28,6 @@ RELAY_TERMINALS = {
 }
 
 
-def add_capacitor(dwg, pos=[10, 10], capacity=40, state=20):
-    x = pos[0]
-    y = pos[1]
-
-    # terminal
-    dwg.add(
-        dwg.line(
-            grid_xy(x, y),
-            grid_xy(x + 1, y),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
-
-
 def add_relay(
     dwg,
     pos=[10, 10],
