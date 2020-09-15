@@ -1,15 +1,9 @@
 import numpy as np
+from . import build
 
 
 def make_register(num_bits=8):
-    cir = {}
-    cir["relays"] = {}
-    cir["capacitors"] = {}
-    cir["nodes"] = {}
-
-    cir["bars"] = []
-    cir["labels"] = {}
-
+    cir = build.empty_circuit()
     x = 16
     y = 0
 
