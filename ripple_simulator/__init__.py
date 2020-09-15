@@ -103,7 +103,6 @@ def compile(circuit):
         "relays": relays,
         "nodes": nodes,
         "bars": list(circuit["bars"]),
-        "labels": dict(circuit["labels"]),
         "meshes_of_equal_potential": meshes_of_equal_potential,
     }
 

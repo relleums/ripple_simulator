@@ -7,7 +7,6 @@ my_circuit = {
     "relays": {"bit": {"pos": [10, 10], "num_steps_before_off": 0},},
     "nodes": {},
     "bars": [("relays/bit/coil", "relays/bit/in"),],
-    "labels": {},
 }
 
 reg = ris.harry_porter_computer.make_register()
@@ -33,7 +32,7 @@ seed_mesh_idx = 0
 
 # run ripple simulation
 # ---------------------
-for step in range(300):
+for step in range(10):
     relays, meshes_on_power = ris.simulate.one_step(
         relays=relays, meshes=meshes, seed_mesh_idx=seed_mesh_idx
     )
@@ -44,9 +43,9 @@ for step in range(300):
 
 
     ris.draw.draw_circuit(
-        path="ripple_simulator/test_{:06d}.svg".format(step),
+        path="test_{:06d}.svg".format(step),
         circuit=circuit,
         circuit_state=circuit_state,
     )
 
-    print(step, circuit_state["nodes"]["nodes/CLK"])
+    #print(step, circuit_state["nodes"]["nodes/CLK"])

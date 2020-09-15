@@ -349,6 +349,13 @@ def add_curcuit(dwg, circuit, circuit_state):
                 pos=cir["nodes"][node_key]["pos"],
                 power=circuit_state["nodes"][node_key],
             )
+        if "name" in cir["nodes"][node_key]:
+            add_label_node(
+                dwg=dwg,
+                pos=cir["nodes"][node_key]["pos"],
+                name=cir["nodes"][node_key]["name"],
+            )
+
 
     for relay_key in cir["relays"]:
         relay = cir["relays"][relay_key]
@@ -372,14 +379,6 @@ def add_curcuit(dwg, circuit, circuit_state):
                     pos=cir["nodes"][node_key]["pos"],
                     power=circuit_state["nodes"][node_key],
                 )
-
-    for label_key in cir["labels"]:
-        add_label_node(
-            dwg=dwg,
-            pos=cir["labels"][label_key]["pos"],
-            name=cir["labels"][label_key]["name"],
-        )
-
 
 
 def draw_circuit(path, circuit, circuit_state):

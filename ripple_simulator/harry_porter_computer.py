@@ -131,7 +131,6 @@ def make_clock(periode=20):
     relays = {}
     nodes = {}
     bars = []
-    labels = {}
 
     RM_Y = 7
     RM_X = 7
@@ -143,8 +142,7 @@ def make_clock(periode=20):
             "num_steps_before_off": periode
         }
 
-    labels["VCLK"] = {"pos": [0, 36], "name": "VCLK"}
-    nodes["VCLK"] = {"pos": [0, 36]}
+    nodes["VCLK"] = {"pos": [0, 36], "name": "VCLK"}
     nodes["v_end"] = {"pos": [48, 36]}
     bars.append(("nodes/VCLK", "nodes/v_end"))
 
@@ -233,8 +231,7 @@ def make_clock(periode=20):
 
 
     # FRZ
-    labels["FRZ"] = {"pos": [0, 43], "name": "FRZ"}
-    nodes["FRZ"] = {"pos": [0, 43]}
+    nodes["FRZ"] = {"pos": [0, 43], "name": "FRZ"}
     nodes["frz0"] = {"pos": [17, 43]}
     nodes["frz1"] = {"pos": [24, 43]}
     bars.append(("nodes/FRZ", "nodes/frz0"))
@@ -294,19 +291,22 @@ def make_clock(periode=20):
 
 
     # XOR
-    relays["XOR4"] = {"pos": [8*RM_X, 4*RM_Y + 6]}
-    relays["XOR3"] = {"pos": [8*RM_X, 3*RM_Y + 6]}
+    relays["XOR4"] = {"pos": [7*RM_X + 2, 4*RM_Y + 6]}
+    relays["XOR3"] = {"pos": [7*RM_X + 2, 3*RM_Y + 6]}
     bars.append(("relays/XOR4/coil", "nodes/unity_4_48"))
     bars.append(("relays/XOR3/coil", "nodes/unity_3_48"))
     bars.append(("relays/XOR3/out_upper", "relays/XOR4/out_lower"))
 
-    labels["CLK"] = {"pos": [56, 40], "name": "CLK"}
-    nodes["CLK"] = {"pos": [56, 40]}
+    nodes["CLK"] = {"pos": [51, 40], "name": "CLK"}
 
+    nodes["vxor0"] = {"pos": [50, 36]}
+    nodes["vxor1"] = {"pos": [50, 29]}
     bars.append(("relays/XOR4/in", "nodes/CLK"))
-    bars.append(("relays/XOR3/in", "nodes/v_end"))
-    nodes["xor_3"] = {"pos": [61, 28]}
-    nodes["xor_4"] = {"pos": [61, 37]}
+    bars.append(("nodes/v_end", "nodes/vxor0"))
+    bars.append(("nodes/vxor0", "nodes/vxor1"))
+    bars.append(("relays/XOR3/in", "nodes/vxor1"))
+    nodes["xor_3"] = {"pos": [56, 28]}
+    nodes["xor_4"] = {"pos": [56, 37]}
     bars.append(("nodes/xor_3", "nodes/xor_4"))
     bars.append(("nodes/xor_3", "relays/XOR3/out_lower"))
     bars.append(("nodes/xor_4", "relays/XOR4/out_upper"))
@@ -315,6 +315,5 @@ def make_clock(periode=20):
     clk["nodes"] = nodes
     clk["relays"] = relays
     clk["bars"] = bars
-    clk["labels"] = labels
 
     return clk
