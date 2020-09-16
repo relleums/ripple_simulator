@@ -173,69 +173,79 @@ def gate_unity(b=0, out=0, labels=False):
     return cir
 
 
-def half_adder(labels=False):
-    xor_ = gate_xor(feed=False)
+def half_adder(sum_bc=0, carry_bc=0, b=0, c=0, labels=False):
+    xor_ = gate_xor(b=1)
     xor_ = build.add_group_name(circuit=xor_, name="XOR")
     xor_ = build.translate(circuit=xor_, pos=[2, 14])
 
-    and_ = gate_and()
+    and_ = gate_and(b=1)
     and_ = build.add_group_name(circuit=and_, name="AND")
     and_ = build.translate(circuit=and_, pos=[2, 0])
 
     cir = build.merge_circuits([xor_, and_])
 
-    cir["nodes"]["c"] = {"pos": [0, 0]}
-    cir["bars"].append(("nodes/c", "nodes/AND_c"))
-
-    cir["nodes"]["b"] = {"pos": [0, 7]}
-    cir["nodes"]["a0"] = {"pos": [1, 7]}
-    cir["bars"].append(("nodes/b", "nodes/a0"))
-    cir["bars"].append(("nodes/a0", "nodes/AND_b"))
-
-    # V
-    cir["nodes"]["v0"] = {"pos": [3, 9]}
-    cir["bars"].append(("nodes/v0", "relays/AND_b/in"))
-
-    cir["nodes"]["v1"] = {"pos": [3, 23]}
-    cir["bars"].append(("nodes/v1", "relays/XOR_b/in"))
-    cir["bars"].append(("nodes/v1", "nodes/v0"))
-    cir["nodes"]["v1"] = {"pos": [3, 23]}
-    cir["nodes"]["V"] = {"pos": [0, 23]}
-    cir["bars"].append(("nodes/V", "nodes/v1"))
-
-    # C
+    cir["bars"].append(("nodes/XOR_b", "nodes/AND_b"))
     cir["bars"].append(("nodes/XOR_c", "nodes/AND_c"))
 
-    # B
-    cir["nodes"]["v2"] = {"pos": [1, 21]}
-    cir["bars"].append(("nodes/v2", "nodes/XOR_b"))
-    cir["bars"].append(("nodes/v2", "nodes/a0"))
+    if b is not None:
+        cir["nodes"]["b"] = {"pos": [0 + b, 7]}
+        cir["bars"].append(("nodes/AND_b", "nodes/b"))
+        if labels:
+            cir["nodes"]["b"]["name"] = "B"
+
+    if c is not None:
+        cir["nodes"]["c"] = {"pos": [0 + c, 0]}
+        cir["bars"].append(("nodes/AND_c", "nodes/c"))
+        if labels:
+            cir["nodes"]["c"]["name"] = "C"
+
+    cir["nodes"]["sum"] = {"pos": [10 + sum_bc, 19]}
+    cir["bars"].append(("nodes/XOR_out", "nodes/sum"))
+
+    cir["nodes"]["carry"] = {"pos": [10 + carry_bc, 5]}
+    cir["bars"].append(("nodes/AND_out", "nodes/carry"))
 
     if labels:
-        cir["nodes"]["c"]["name"] = "C"
-        cir["nodes"]["b"]["name"] = "B"
-        cir["nodes"]["V"]["name"] = "V"
-
-        cir["nodes"]["AND_AND_bc"]["name"] = "CARRY"
-        cir["nodes"]["XOR_XOR_bc"]["name"] = "SUM"
+        cir["nodes"]["sum"]["name"] = "SUM(B,C)"
+        cir["nodes"]["carry"]["name"] = "CARRY(B,C)"
 
     return cir
 
 
 def full_adder(labels=True):
 
-    ha1 = half_adder(labels=labels)
-    ha1 = build.add_group_name(circuit=ha1, name="HALF1")
+    ha1 = half_adder(b=None, c=None)
+    ha1 = build.add_group_name(circuit=ha1, name="HA1")
     ha1 = build.translate(circuit=ha1, pos=[0, 6])
 
-    ha2 = half_adder(labels=labels)
-    ha2 = build.add_group_name(circuit=ha2, name="HALF2")
-    ha2 = build.translate(circuit=ha2, pos=[14, 6])
+    ha2 = half_adder(b=None, c=None, sum_bc=1)
+    ha2 = build.add_group_name(circuit=ha2, name="HA2")
+    ha2 = build.translate(circuit=ha2, pos=[12, 6])
 
     or_ = gate_or()
     or_ = build.add_group_name(circuit=or_, name="OR")
-    or_ = build.translate(circuit=or_, pos=[28, 6])
+    or_ = build.translate(circuit=or_, pos=[24, 6])
 
     cir = build.merge_circuits([ha1, ha2, or_])
+
+    cir["nodes"]["c_in"] = {"pos": [0, 36], "name": "Cin"}
+    cir["nodes"]["c_in_0"] = {"pos": [14, 36]}
+    cir["bars"].append(("nodes/c_in", "nodes/c_in_0"))
+    cir["bars"].append(("nodes/c_in_0", "nodes/HA2_XOR_c"))
+
+    cir["nodes"]["b"] = {"pos": [0, 34], "name": "B"}
+    cir["nodes"]["c"] = {"pos": [0, 32], "name": "C"}
+
+    cir["nodes"]["sum_bc"] = {"pos": [0, 2], "name": "SUM(B,C)"}
+    cir["nodes"]["sum_bc_0"] = {"pos": [23, 2]}
+    cir["bars"].append(("nodes/sum_bc", "nodes/sum_bc_0"))
+    cir["bars"].append(("nodes/sum_bc_0", "nodes/HA2_sum"))
+
+    cir["nodes"]["c_out"] = {"pos": [0, 0], "name": "Cout"}
+    cir["nodes"]["c_out_0"] = {"pos": [32, 0]}
+    cir["bars"].append(("nodes/c_out_0", "nodes/OR_out"))
+    cir["bars"].append(("nodes/c_out_0", "nodes/c_out"))
+
+
 
     return cir

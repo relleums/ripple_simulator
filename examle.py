@@ -24,34 +24,34 @@ reg_B = ris.translate(circuit=reg_B, pos=[64, 0])
 
 gate_and = ris.logic.gate_and(labels=True)
 gate_and = ris.build.add_group_name(circuit=gate_and, name="AND")
-gate_and = ris.build.translate(circuit=gate_and, pos=[20, 0])
+gate_and = ris.build.translate(circuit=gate_and, pos=[40, 0])
 
 gate_or = ris.logic.gate_or(labels=True)
 gate_or = ris.build.add_group_name(circuit=gate_or, name="OR")
-gate_or = ris.build.translate(circuit=gate_or, pos=[30, 0])
+gate_or = ris.build.translate(circuit=gate_or, pos=[50, 0])
 
 gate_xor = ris.logic.gate_xor(labels=True)
 gate_xor = ris.build.add_group_name(circuit=gate_xor, name="XOR")
-gate_xor = ris.build.translate(circuit=gate_xor, pos=[40, 0])
+gate_xor = ris.build.translate(circuit=gate_xor, pos=[60, 0])
 
 gate_not = ris.logic.gate_not(labels=True)
 gate_not = ris.build.add_group_name(circuit=gate_not, name="NOT")
-gate_not = ris.build.translate(circuit=gate_not, pos=[50, 0])
+gate_not = ris.build.translate(circuit=gate_not, pos=[70, 0])
 
 gate_unity = ris.logic.gate_unity(labels=True)
 gate_unity = ris.build.add_group_name(circuit=gate_unity, name="UNITY")
-gate_unity = ris.build.translate(circuit=gate_unity, pos=[60, 0])
-"""
-half_adder = ris.logic.half_adder()
-half_adder = ris.build.add_group_name(circuit=half_adder, name="HALF-ADDER")
-half_adder = ris.build.translate(circuit=half_adder, pos=[40, 0])
+gate_unity = ris.build.translate(circuit=gate_unity, pos=[80, 0])
+
+half_adder = ris.logic.half_adder(labels=True)
+half_adder = ris.build.add_group_name(circuit=half_adder, name="HA")
+half_adder = ris.build.translate(circuit=half_adder, pos=[70, 20])
 
 
 full_adder = ris.logic.full_adder(labels=True)
-full_adder = ris.build.add_group_name(circuit=full_adder, name="FULL-ADDER")
+full_adder = ris.build.add_group_name(circuit=full_adder, name="FA")
 full_adder = ris.build.translate(circuit=full_adder, pos=[0, 0])
-"""
-cir = ris.build.merge_circuits([clk, gate_and, gate_or, gate_xor, gate_not, gate_unity])
+
+cir = ris.build.merge_circuits([clk, gate_and, gate_or, gate_xor, gate_not, gate_unity, half_adder, full_adder])
 cir["nodes"]["V"] = {"pos": [0, 0], "name": "V"}
 
 # connect all Vs

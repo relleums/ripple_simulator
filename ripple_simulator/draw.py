@@ -354,7 +354,7 @@ def add_label_node(dwg, pos, name, stroke_width=2.0, stroke="black"):
     dwg.add(
         dwg.line(
             grid_xy(x, y),
-            grid_xy(x - 1, y + 1),
+            grid_xy(x - 1, y + 0.75),
             stroke=stroke,
             stroke_width=stroke_width,
         )
@@ -362,7 +362,7 @@ def add_label_node(dwg, pos, name, stroke_width=2.0, stroke="black"):
     dwg.add(
         dwg.line(
             grid_xy(x, y),
-            grid_xy(x - 1, y - 1),
+            grid_xy(x - 1, y - 0.75),
             stroke=stroke,
             stroke_width=stroke_width,
         )
@@ -370,24 +370,24 @@ def add_label_node(dwg, pos, name, stroke_width=2.0, stroke="black"):
 
     dwg.add(
         dwg.line(
-            grid_xy(x - 1 - w, y - 1),
-            grid_xy(x - 1, y - 1),
+            grid_xy(x - 1 - w, y - 0.75),
+            grid_xy(x - 1, y - 0.75),
             stroke=stroke,
             stroke_width=stroke_width,
         )
     )
     dwg.add(
         dwg.line(
-            grid_xy(x - 1 - w, y + 1),
-            grid_xy(x - 1, y + 1),
+            grid_xy(x - 1 - w, y + 0.75),
+            grid_xy(x - 1, y + 0.75),
             stroke=stroke,
             stroke_width=stroke_width,
         )
     )
     dwg.add(
         dwg.line(
-            grid_xy(x - 1 - w, y - 1),
-            grid_xy(x - 1 - w, y + 1),
+            grid_xy(x - 1 - w, y - 0.75),
+            grid_xy(x - 1 - w, y + 0.75),
             stroke=stroke,
             stroke_width=stroke_width,
         )
