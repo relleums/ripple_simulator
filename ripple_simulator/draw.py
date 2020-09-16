@@ -165,6 +165,15 @@ def add_relay(
         Y = (state - simulate.STATE_OFF_LT) / num_floating_states - 0.5
         coil_fill = "orange"
 
+    if power_in == 1:
+        dwg.add(
+            dwg.line(
+                grid_xy(x + 1.5, y + 2),
+                grid_xy(x + 2.5, y + 2 + Y),
+                stroke="red",
+                stroke_width=2 * stroke_width,
+            )
+        )
     dwg.add(
         dwg.line(
             grid_xy(x + 1.5, y + 2),
@@ -425,10 +434,17 @@ def add_curcuit(dwg, circuit, circuit_state):
 
     for relay_key in cir["relays"]:
         relay = cir["relays"][relay_key]
+
+        in_state = circuit_state["nodes"]["relays/" + relay_key + "/in"]
+        ou_state = circuit_state["nodes"]["relays/" + relay_key + "/out_upper"]
+        ol_state = circuit_state["nodes"]["relays/" + relay_key + "/out_lower"]
         add_relay(
             dwg=dwg,
             pos=relay["pos"],
             state=circuit_state["relays"][relay_key],
+            power_in=in_state,
+            power_out_upper=ou_state,
+            power_out_lower=ol_state,
         )
 
         for terminal_key in RELAY_TERMINALS:
