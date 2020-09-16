@@ -340,7 +340,7 @@ def add_node(dwg, pos=(0, 0), stroke_width=0.0, stroke="black", power=0):
 def add_label_node(dwg, pos, name, stroke_width=2.0, stroke="black"):
     x, y = pos
 
-    w = 2 / 3 * len(name)
+    w = len(name)
 
     dwg.add(
         dwg.line(
@@ -383,7 +383,7 @@ def add_label_node(dwg, pos, name, stroke_width=2.0, stroke="black"):
             stroke_width=stroke_width,
         )
     )
-    dwg.add(dwg.text(name, grid_xy(x - w, y)))
+    dwg.add(dwg.text(name, grid_xy(x - w - 0.5, y - 0.3)))
 
 
 def add_curcuit(dwg, circuit, circuit_state):
@@ -393,12 +393,21 @@ def add_curcuit(dwg, circuit, circuit_state):
     for bar_idx, bar in enumerate(cir["bars"]):
         start = cir["nodes"][bar[0]]["pos"]
         stop = cir["nodes"][bar[1]]["pos"]
-        add_bar(
-            dwg=dwg,
-            start=start,
-            stop=stop,
-            power=circuit_state["bars"][bar_idx],
-        )
+        if len(bar) == 2:
+            add_bar(
+                dwg=dwg,
+                start=start,
+                stop=stop,
+                power=circuit_state["bars"][bar_idx],
+            )
+        else:
+            add_bar(
+                dwg=dwg,
+                start=start,
+                stop=stop,
+                power=circuit_state["bars"][bar_idx],
+                stroke_width=0.1
+            )
 
     for node_key in cir["nodes"]:
         if len(cir["nodes"][node_key]["bars"]) > 2:

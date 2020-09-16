@@ -15,37 +15,52 @@ reg = ris.harry_porter_computer.make_register()
 clk = ris.harry_porter_computer.make_clock(periode=100)
 
 clk = ris.build.add_group_name(circuit=clk, name="CLOCK")
-clk = ris.build.translate(circuit=clk, pos=[64, 0])
+clk = ris.build.translate(circuit=clk, pos=[72, 20])
 
 """
 reg_B = ris.add_group_name(circuit=reg, name="REGISTER-B")
 reg_B = ris.translate(circuit=reg_B, pos=[64, 0])
 """
-gate_and = ris.logic.gate_and()
+
+gate_and = ris.logic.gate_and(labels=True)
 gate_and = ris.build.add_group_name(circuit=gate_and, name="AND")
-gate_and = ris.build.translate(circuit=gate_and, pos=[15, 30])
+gate_and = ris.build.translate(circuit=gate_and, pos=[20, 0])
 
-gate_or = ris.logic.gate_or()
+gate_or = ris.logic.gate_or(labels=True)
 gate_or = ris.build.add_group_name(circuit=gate_or, name="OR")
-gate_or = ris.build.translate(circuit=gate_or, pos=[15, 15])
+gate_or = ris.build.translate(circuit=gate_or, pos=[30, 0])
 
-gate_xor = ris.logic.gate_xor()
+gate_xor = ris.logic.gate_xor(labels=True)
 gate_xor = ris.build.add_group_name(circuit=gate_xor, name="XOR")
-gate_xor = ris.build.translate(circuit=gate_xor, pos=[15, 0])
+gate_xor = ris.build.translate(circuit=gate_xor, pos=[40, 0])
 
-gate_not = ris.logic.gate_not()
+gate_not = ris.logic.gate_not(labels=True)
 gate_not = ris.build.add_group_name(circuit=gate_not, name="NOT")
-gate_not = ris.build.translate(circuit=gate_not, pos=[30, 30])
+gate_not = ris.build.translate(circuit=gate_not, pos=[50, 0])
 
-gate_unity = ris.logic.gate_unity()
+gate_unity = ris.logic.gate_unity(labels=True)
 gate_unity = ris.build.add_group_name(circuit=gate_unity, name="UNITY")
-gate_unity = ris.build.translate(circuit=gate_unity, pos=[30, 15])
-
+gate_unity = ris.build.translate(circuit=gate_unity, pos=[60, 0])
+"""
 half_adder = ris.logic.half_adder()
 half_adder = ris.build.add_group_name(circuit=half_adder, name="HALF-ADDER")
-half_adder = ris.build.translate(circuit=half_adder, pos=[0, 0])
+half_adder = ris.build.translate(circuit=half_adder, pos=[40, 0])
 
-cir = ris.build.merge_circuits([clk, gate_and, gate_or, gate_xor, gate_not, gate_unity, half_adder])
+
+full_adder = ris.logic.full_adder(labels=True)
+full_adder = ris.build.add_group_name(circuit=full_adder, name="FULL-ADDER")
+full_adder = ris.build.translate(circuit=full_adder, pos=[0, 0])
+"""
+cir = ris.build.merge_circuits([clk, gate_and, gate_or, gate_xor, gate_not, gate_unity])
+cir["nodes"]["V"] = {"pos": [0, 0], "name": "V"}
+
+# connect all Vs
+for node_key in cir["nodes"]:
+    if node_key.endswith("_V"):
+        print(node_key)
+        cir["bars"].append(("nodes/V", "nodes/" + node_key, "transparent"))
+
+cir["bars"].append(("nodes/V", "nodes/CLOCK_VCLK", "transparent"))
 
 circuit = ris.compile(circuit=cir)
 
