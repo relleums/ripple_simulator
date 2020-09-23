@@ -11,12 +11,12 @@ def make_register(num_bits=8):
 
     for bit in range(num_bits):
         cir["relays"]["bit_{:d}".format(bit)] = {
-            "pos": [x + 2 + bit * 6, y + 18]
+            "pos": [x + 2 + bit * 6, y + 18], "rot": 0
         }
 
     for bit in range(num_bits):
         cir["relays"]["enable_{:d}".format(bit)] = {
-            "pos": [x + 2 + bit * 6, y + 12]
+            "pos": [x + 2 + bit * 6, y + 12], "rot": 0
         }
 
     for bit in range(num_bits):
@@ -128,9 +128,9 @@ def make_register(num_bits=8):
 
     cir["bars"].append(("nodes/select", "nodes/enable"))
 
-    cir["relays"]["load_not"] = {"pos": [x - 10, y + 12]}
-    cir["relays"]["load"] = {"pos": [x - 10, y + 18]}
-    cir["relays"]["select"] = {"pos": [x - 4, y + 12]}
+    cir["relays"]["load_not"] = {"pos": [x - 10, y + 12], "rot": 0}
+    cir["relays"]["load"] = {"pos": [x - 10, y + 18], "rot": 0}
+    cir["relays"]["select"] = {"pos": [x - 4, y + 12], "rot": 0}
 
     # load to relay coils
     cir["nodes"]["l0"] = {"pos": [x - 12, y + 18]}
@@ -180,7 +180,7 @@ def make_clock(periode):
     for i in range(4):
         ii = 4 - i
         key = "R{:d}".format(ii)
-        relays[key] = {"pos": [RM_X, ii * RM_Y + 3]}
+        relays[key] = {"pos": [RM_X, ii * RM_Y + 3], "rot": 1}
 
         ckey = "C{:d}".format(ii)
         caps[ckey] = {"pos": [RM_X - 4, ii * RM_Y + 3], "capacity": periode}
@@ -279,14 +279,14 @@ def make_clock(periode):
     bars.append(("nodes/FRZ", "nodes/frz0"))
     bars.append(("nodes/frz0", "nodes/frz1"))
 
-    relays["FRZ_33"] = {"pos": [2 * RM_X - 1, 5 * RM_Y + 3]}
+    relays["FRZ_33"] = {"pos": [16, 38], "rot": 2}
     nodes["FRZ_coil_3"] = {"pos": [12, 5 * RM_Y + 5]}
     bars.append(("nodes/FRZ_coil_3", "relays/FRZ_33/in"))
     bars.append(("nodes/coil_3_12", "nodes/FRZ_coil_3"))
     bars.append(("relays/FRZ_33/coil", "nodes/unity_3_13"))
     bars.append(("nodes/frz0", "relays/FRZ_33/out_upper"))
 
-    relays["FRZ_12"] = {"pos": [3 * RM_X - 1, 5 * RM_Y + 3]}
+    relays["FRZ_12"] = {"pos": [24, 38], "rot": 2}
     nodes["FRZ_coil_1"] = {"pos": [19, 5 * RM_Y + 5]}
     bars.append(("nodes/FRZ_coil_1", "relays/FRZ_12/in"))
     bars.append(("nodes/coil_1_19", "nodes/FRZ_coil_1"))
@@ -294,7 +294,7 @@ def make_clock(periode):
     bars.append(("nodes/frz1", "relays/FRZ_12/out_upper"))
 
     # CYCLE 32
-    relays["CYC32"] = {"pos": [4 * RM_X - 1, 0 * RM_Y + 3]}
+    relays["CYC32"] = {"pos": [4 * RM_X - 1, 0 * RM_Y + 3], "rot": 0}
     nodes["cyc32_coil"] = {"pos": [4 * RM_X - 2, 0 * RM_Y + 3]}
     bars.append(("relays/CYC32/coil", "nodes/cyc32_coil"))
     bars.append(("nodes/cyc32_coil", "nodes/unity_3_26"))
@@ -307,7 +307,7 @@ def make_clock(periode):
     bars.append(("relays/CYC32/out_upper", "nodes/coil_4_31"))
 
     # CYCLE 22
-    relays["CYC22"] = {"pos": [5 * RM_X - 1, 0 * RM_Y + 3]}
+    relays["CYC22"] = {"pos": [5 * RM_X - 1, 0 * RM_Y + 3], "rot": 0}
     nodes["cyc22_coil"] = {"pos": [5 * RM_X - 2, 0 * RM_Y + 3]}
     bars.append(("relays/CYC22/coil", "nodes/cyc22_coil"))
     bars.append(("nodes/cyc22_coil", "nodes/unity_2_33"))
@@ -319,7 +319,7 @@ def make_clock(periode):
     bars.append(("relays/CYC22/out_upper", "nodes/coil_3_38"))
 
     # CYCLE 14
-    relays["CYC14"] = {"pos": [6 * RM_X - 1, 0 * RM_Y + 3]}
+    relays["CYC14"] = {"pos": [6 * RM_X - 1, 0 * RM_Y + 3], "rot": 0}
     nodes["cyc14_coil"] = {"pos": [6 * RM_X - 2, 0 * RM_Y + 3]}
     bars.append(("relays/CYC14/coil", "nodes/cyc14_coil"))
     bars.append(("nodes/cyc14_coil", "nodes/unity_1_40"))
@@ -331,8 +331,8 @@ def make_clock(periode):
     bars.append(("relays/CYC14/in", "nodes/anti_4_41"))
 
     # XOR
-    relays["XOR4"] = {"pos": [7 * RM_X + 2, 4 * RM_Y + 6]}
-    relays["XOR3"] = {"pos": [7 * RM_X + 2, 3 * RM_Y + 6]}
+    relays["XOR4"] = {"pos": [7 * RM_X + 2, 4 * RM_Y + 6], "rot": 3}
+    relays["XOR3"] = {"pos": [7 * RM_X + 2, 3 * RM_Y + 6], "rot": 3}
     bars.append(("relays/XOR4/coil", "nodes/unity_4_48"))
     bars.append(("relays/XOR3/coil", "nodes/unity_3_48"))
     bars.append(("relays/XOR3/out_upper", "relays/XOR4/out_lower"))
