@@ -68,7 +68,7 @@ for step in range(1):
         meshes_on_power=meshes_on_power,
     )
 
-    ris.draw_board.draw_circuit(
+    ris.draw.draw_circuit(
         path="test_{:06d}.svg".format(step),
         circuit=circuit,
         circuit_state=circuit_state,

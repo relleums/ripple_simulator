@@ -4,14 +4,12 @@ import svgwrite
 from . import simulate
 
 
-RM_PX = 16
-RELAY_WIDTH_PX = 32
-RELAY_HEIGHT_PX = 2 * RELAY_WIDTH_PX
+RM_PX = 10
 
-GRID_WIDTH_Y = 48
-GRID_WIDTH_X = 48
-GRID_START_X = 3
-GRID_START_Y = 3
+GRID_WIDTH_Y = 39
+GRID_WIDTH_X = 63
+GRID_START_X = 5
+GRID_START_Y = 5
 
 
 def grid_xy(x, y):
@@ -21,17 +19,57 @@ def grid_xy(x, y):
     )
 
 
+def grid_rot(xy, rot):
+    if rot == 0:
+        return xy
+    elif rot == 1:
+        return (xy[1], -xy[0])
+    elif rot == 2:
+        return (-xy[0], -xy[1])
+    elif rot == 3:
+        return (-xy[1], xy[0])
+    else:
+        raise KeyError
+
+
+def grid_trans(xy, pos):
+    return (xy[0] + pos[0], xy[1] + pos[1])
+
+
+def add_line(dwg, start, stop, stroke, stroke_width):
+    dwg.add(
+        dwg.line(
+            grid_xy(start[0], start[1]),
+            grid_xy(stop[0], stop[1]),
+            stroke=stroke,
+            stroke_width=stroke_width,
+        )
+    )
+
+def add_dot(dwg, pos, stroke="black", stroke_width=0.2):
+    dwg.add(
+        dwg.circle(
+            grid_xy(pos[0], pos[1]),
+            0.2 * RM_PX,
+            stroke=stroke,
+            stroke_width=stroke_width,
+        )
+    )
+
 RELAY_TERMINALS = {
-    "coil": {"pos": [0, 0]},
-    "in": {"pos": [0, 2]},
-    "out_lower": {"pos": [4, 1]},
-    "out_upper": {"pos": [4, 3]},
+    "in": (0, 0),
+    "in2": (3, 0),
+    "coil": (0, 4),
+    "coil2": (3, 4),
+    "out_lower": (0, 5),
+    "out_upper": (3, 5),
 }
 
 
 def add_relay(
     dwg,
     pos=[10, 10],
+    rot=0,
     state=0,
     power_coil=0,
     power_in=0,
@@ -40,159 +78,78 @@ def add_relay(
     stroke_width=2.0,
     stroke="black",
 ):
+    """
+    frame
+    =====
+    cC        cD
+    +---------+
+    |oUpp oLow|
+    |         |
+    |coi  coi2|
+    |         |
+    |         |
+    |         |
+    |in    in2|
+    +---------+
+    cA        cB
 
-    x = pos[0]
-    y = pos[1]
+    Y
+    ^
+    |
+    +----> X
+    """
+    _cA = (-0.5, -0.5)
+    _cB = (+3.5, -0.5)
+    _cC = (-0.5, +5.5)
+    _cD = (+3.5, +5.5)
 
-    # frame
-    # =====
-    dwg.add(
-        dwg.line(
-            grid_xy(x + 1, y - 1),
-            grid_xy(x + 1, y + 4),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
-    dwg.add(
-        dwg.line(
-            grid_xy(x + 3, y - 1),
-            grid_xy(x + 3, y + 4),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
+    _coil_center = (+1.5, +4.0)
+    _in_center = (1.5, 0.0)
 
-    dwg.add(
-        dwg.line(
-            grid_xy(x + 1, y - 1),
-            grid_xy(x + 3, y - 1),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
-    dwg.add(
-        dwg.line(
-            grid_xy(x + 1, y + 4),
-            grid_xy(x + 3, y + 4),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
+    cA = grid_trans(grid_rot(_cA, rot), pos)
+    cB = grid_trans(grid_rot(_cB, rot), pos)
+    cC = grid_trans(grid_rot(_cC, rot), pos)
+    cD = grid_trans(grid_rot(_cD, rot), pos)
+    coil_center = grid_trans(grid_rot(_coil_center, rot), pos)
+    in_center = grid_trans(grid_rot(_in_center, rot), pos)
+
+
+    add_line(dwg, cA, cB, stroke, stroke_width)
+    add_line(dwg, cB, cD, stroke, stroke_width)
+    add_line(dwg, cD, cC, stroke, stroke_width)
+    add_line(dwg, cC, cA, stroke, stroke_width)
 
     # terminals
     # =========
-    if power_coil == 1:
-        dwg.add(
-            dwg.line(
-                grid_xy(x + 0, y + 0),
-                grid_xy(x + 1.5, y + 0),
-                stroke="red",
-                stroke_width=2 * stroke_width,
-            )
-        )
-    dwg.add(
-        dwg.line(
-            grid_xy(x + 0, y + 0),
-            grid_xy(x + 1.5, y + 0),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
-
-    if power_in == 1:
-        dwg.add(
-            dwg.line(
-                grid_xy(x + 0, y + 2),
-                grid_xy(x + 1.5, y + 2),
-                stroke="red",
-                stroke_width=2 * stroke_width,
-            )
-        )
-    dwg.add(
-        dwg.line(
-            grid_xy(x + 0, y + 2),
-            grid_xy(x + 1.5, y + 2),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
-
-    if power_out_lower == 1:
-        dwg.add(
-            dwg.line(
-                grid_xy(x + 2.5, y + 1),
-                grid_xy(x + 4, y + 1),
-                stroke="red",
-                stroke_width=2 * stroke_width,
-            )
-        )
-    dwg.add(
-        dwg.line(
-            grid_xy(x + 2.5, y + 1),
-            grid_xy(x + 4, y + 1),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
-
-    if power_out_upper == 1:
-        dwg.add(
-            dwg.line(
-                grid_xy(x + 2.5, y + 3),
-                grid_xy(x + 4, y + 3),
-                stroke="red",
-                stroke_width=2 * stroke_width,
-            )
-        )
-    dwg.add(
-        dwg.line(
-            grid_xy(x + 2.5, y + 3),
-            grid_xy(x + 4, y + 3),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
+    terminal_pos = {}
+    for terminal_key in RELAY_TERMINALS:
+        t_pos = RELAY_TERMINALS[terminal_key]
+        t_pos_r = grid_trans(grid_rot(xy=t_pos, rot=rot), pos)
+        terminal_pos[terminal_key] = t_pos_r
+        add_dot(dwg, (t_pos_r[0], t_pos_r[1]), stroke, stroke_width)
 
     if state < simulate.STATE_OFF_LT:
-        Y = -1
+        sx = -1
         coil_fill = "white"
     elif state > simulate.STATE_ON_GT:
-        Y = 1
+        sx = 1
         coil_fill = "red"
     else:
         num_floating_states = simulate.STATE_ON_GT - simulate.STATE_OFF_LT
-        Y = (state - simulate.STATE_OFF_LT) / num_floating_states - 0.5
+        sx = (state - simulate.STATE_OFF_LT) / num_floating_states - 0.5
         coil_fill = "orange"
 
+    _switch_pos = (1.2*sx + 1.5, 5)
+    switch_pos = grid_trans(grid_rot(_switch_pos, rot), pos)
+
     if power_in == 1:
-        dwg.add(
-            dwg.line(
-                grid_xy(x + 1.5, y + 2),
-                grid_xy(x + 2.5, y + 2 + Y),
-                stroke="red",
-                stroke_width=2 * stroke_width,
-            )
-        )
-    dwg.add(
-        dwg.line(
-            grid_xy(x + 1.5, y + 2),
-            grid_xy(x + 2.5, y + 2 + Y),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
-    # coil
-    # ====
-    dwg.add(
-        dwg.circle(
-            grid_xy(x + 2, y + 0),
-            0.6 * RM_PX,
-            stroke=stroke,
-            stroke_width=stroke_width,
-            fill=coil_fill,
-        )
-    )
+        add_line(dwg, terminal_pos["in"], terminal_pos["in2"], "red", 2*stroke_width)
+        add_line(dwg, in_center, coil_center, "red", 2*stroke_width)
+        add_line(dwg, switch_pos, coil_center, "red", 2*stroke_width)
+    add_line(dwg, terminal_pos["in"], terminal_pos["in2"], stroke, stroke_width)
+    add_line(dwg, in_center, coil_center, stroke, stroke_width)
+    add_line(dwg, switch_pos, coil_center, stroke, stroke_width)
+
 
 
 def add_grid(
@@ -211,22 +168,26 @@ def add_grid(
             fill=fill,
         )
     )
+    ow = 1.0
+    c1 = (-0.5, -0.5)
+    c2 = (GRID_WIDTH_X + 0.5, -0.5)
+    c3 = (GRID_WIDTH_X + 0.5, GRID_WIDTH_Y + 0.5)
+    c4 = (-0.5, GRID_WIDTH_Y + 0.5)
+    add_line(dwg, c1, c2, stroke, ow)
+    add_line(dwg, c2, c3, stroke, ow)
+    add_line(dwg, c3, c4, stroke, ow)
+    add_line(dwg, c4, c1, stroke, ow)
+
     for xl in range(size[0]):
         if xl % 10 == 0:
             xw = stroke_width
         else:
             xw = 0.5 * stroke_width
 
-        dwg.add(
-            dwg.line(
-                grid_xy(xl, 0),
-                grid_xy(xl, size[1]),
-                stroke=stroke,
-                stroke_width=xw,
-            )
-        )
+        add_line(dwg, (xl, 0), (xl, size[1]), stroke, xw)
+
         if xl % 5 == 0:
-            dwg.add(dwg.text("{:>3d}".format(xl), grid_xy(xl - 0.5, -1),))
+            dwg.add(dwg.text("{:>3d}".format(xl), grid_xy(xl - 0.5, -2),))
     dwg.add(dwg.text("X", grid_xy(size[0] + 1, -1)))
 
     for yl in range(size[1]):
@@ -235,16 +196,10 @@ def add_grid(
         else:
             yw = 0.5 * stroke_width
 
-        dwg.add(
-            dwg.line(
-                grid_xy(0, yl),
-                grid_xy(size[0], yl),
-                stroke=stroke,
-                stroke_width=yw,
-            )
-        )
+        add_line(dwg, (0, yl), (size[0], yl), stroke, yw)
+
         if yl % 5 == 0:
-            dwg.add(dwg.text("{:>3d}".format(yl), grid_xy(-1, (yl - 0.5))))
+            dwg.add(dwg.text("{:>3d}".format(yl), grid_xy(-3, (yl - 0.5))))
         dwg.add(dwg.text("Y", grid_xy(-1, size[1] + 1)))
 
 
@@ -252,27 +207,14 @@ def add_bar(
     dwg, start=(0, 0), stop=(1, 1), stroke_width=2.0, stroke="black", power=0
 ):
     if power == 1:
-        dwg.add(
-            dwg.line(
-                grid_xy(start[0], start[1]),
-                grid_xy(stop[0], stop[1]),
-                stroke="red",
-                stroke_width=stroke_width * 2,
-            )
-        )
-    dwg.add(
-        dwg.line(
-            grid_xy(start[0], start[1]),
-            grid_xy(stop[0], stop[1]),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
+        add_line(dwg, start, stop, "red", 2*stroke_width)
+    add_line(dwg, start, stop, stroke, stroke_width)
 
 
 def add_capacitor(
-    dwg, pos=[0, 0], capacity=10, state=5, stroke_width=2.0, stroke="black"
+    dwg, pos=(0, 0), capacity=10, state=5, stroke_width=2.0, stroke="black"
 ):
+    sw = stroke_width
     x = pos[0]
     y = pos[1]
 
@@ -280,48 +222,20 @@ def add_capacitor(
     if fill > 1.0:
         fill = 1.0
 
+    add_dot(dwg, (x, y), stroke, sw)
+    add_dot(dwg, (x, y + 1), stroke, sw)
+
     dwg.add(
         dwg.rect(
-            grid_xy(x - 1, y - 0.5),
-            (2 * RM_PX * fill, RM_PX * 1),
+            grid_xy(x - 0.75, y + 0.75),
+            (1.5 * RM_PX * fill, RM_PX * 0.5),
             stroke="none",
             stroke_width=0,
             fill="red",
         )
     )
-    dwg.add(
-        dwg.line(
-            grid_xy(x, y),
-            grid_xy(x, y - 0.5),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
-    dwg.add(
-        dwg.line(
-            grid_xy(x - 1, y - 0.5),
-            grid_xy(x + 1, y - 0.5),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
-    dwg.add(
-        dwg.line(
-            grid_xy(x - 1, y - 1.5),
-            grid_xy(x + 1, y - 1.5),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
-    dwg.add(
-        dwg.line(
-            grid_xy(x, y - 1.5),
-            grid_xy(x, y - 2),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
-
+    add_line(dwg, (x - 0.75, y + 0.25), (x + 0.75, y + 0.25), stroke, 0.5*sw)
+    add_line(dwg, (x - 0.75, y + 0.75), (x + 0.75, y + 0.75), stroke, 0.5*sw)
 
 def add_node(dwg, pos=(0, 0), stroke_width=0.0, stroke="black", power=0):
     node_radius = 0.3 * RM_PX
@@ -348,56 +262,19 @@ def add_node(dwg, pos=(0, 0), stroke_width=0.0, stroke="black", power=0):
 
 def add_label_node(dwg, pos, name, stroke_width=2.0, stroke="black"):
     x, y = pos
-
+    sw = stroke_width
     w = len(name)
-
-    dwg.add(
-        dwg.line(
-            grid_xy(x, y),
-            grid_xy(x - 1, y + 0.75),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
-    dwg.add(
-        dwg.line(
-            grid_xy(x, y),
-            grid_xy(x - 1, y - 0.75),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
-
-    dwg.add(
-        dwg.line(
-            grid_xy(x - 1 - w, y - 0.75),
-            grid_xy(x - 1, y - 0.75),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
-    dwg.add(
-        dwg.line(
-            grid_xy(x - 1 - w, y + 0.75),
-            grid_xy(x - 1, y + 0.75),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
-    dwg.add(
-        dwg.line(
-            grid_xy(x - 1 - w, y - 0.75),
-            grid_xy(x - 1 - w, y + 0.75),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
-    )
+    add_line(dwg, (x, y), (x - 1, y + 0.75), stroke, sw)
+    add_line(dwg, (x, y), (x - 1, y - 0.75), stroke, sw)
+    add_line(dwg, (x - 1 - w, y - 0.75), (x - 1, y - 0.75), stroke, sw)
+    add_line(dwg, (x - 1 - w, y + 0.75), (x - 1, y + 0.75), stroke, sw)
+    add_line(dwg, (x - 1 - w, y - 0.75), (x - 1 - w, y + 0.75), stroke, sw)
     dwg.add(dwg.text(name, grid_xy(x - w - 0.5, y - 0.3)))
 
 
 def add_curcuit(dwg, circuit, circuit_state):
     cir = circuit
-    add_grid(dwg=dwg, size=[128, 64])
+    add_grid(dwg=dwg, size=[GRID_WIDTH_X, GRID_WIDTH_Y])
 
     for bar_idx, bar in enumerate(cir["bars"]):
         start = cir["nodes"][bar[0]]["pos"]
@@ -441,6 +318,7 @@ def add_curcuit(dwg, circuit, circuit_state):
         add_relay(
             dwg=dwg,
             pos=relay["pos"],
+            rot=relay["rot"],
             state=circuit_state["relays"][relay_key],
             power_in=in_state,
             power_out_upper=ou_state,

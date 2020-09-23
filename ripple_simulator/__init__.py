@@ -1,6 +1,5 @@
 from . import simulate
 from . import draw
-from . import draw_board
 from . import harry_porter_computer
 from . import build
 from . import logic
@@ -16,12 +15,12 @@ def copy_and_expand_node_names(nodes):
 def copy_and_expand_relay_node_names(relays):
     relay_nodes = {}
     for relay_key in relays:
-        for relay_terminal_key in draw_board.RELAY_TERMINALS:
+        for relay_terminal_key in draw.RELAY_TERMINALS:
             name = "relays" + "/" + relay_key + "/" + relay_terminal_key
             relay = relays[relay_key]
-            terminal_xy = draw_board.RELAY_TERMINALS[relay_terminal_key]
+            terminal_xy = draw.RELAY_TERMINALS[relay_terminal_key]
             rot = relay["rot"]
-            terminal_pos = draw_board.grid_rot(xy=terminal_xy, rot=rot)
+            terminal_pos = draw.grid_rot(xy=terminal_xy, rot=rot)
             pos_x = relay["pos"][0] + terminal_pos[0]
             pos_y = relay["pos"][1] + terminal_pos[1]
             relay_nodes[name] = {"pos": [pos_x, pos_y]}
