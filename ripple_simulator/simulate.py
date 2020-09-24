@@ -19,7 +19,7 @@ def find_relay_keys_in_mesh(mesh):
 def update_relay_states(meshes_on_power, relays):
     for relay_key in relays:
         rel = relays[relay_key]
-        relay_coil_mesh_idx = rel["coil_mesh"]
+        relay_coil_mesh_idx = rel["coil0_mesh"]
 
         if relay_coil_mesh_idx in meshes_on_power:
             rel["state"] += 1
@@ -39,30 +39,30 @@ def walk_meshes_on_power(meshes_on_power, meshes, seed_mesh_idx, relays):
     meshes_on_power.add(seed_mesh_idx)
 
     # find all connected meshes through relays
-    relay_keys_in_mesh = find_relay_keys_in_mesh(mesh=meshes[seed_mesh_idx])
+    relay_keys_in0_mesh = find_relay_keys_in_mesh(mesh=meshes[seed_mesh_idx])
 
     connected_meshes = set()
-    for relay_key in relay_keys_in_mesh:
+    for relay_key in relay_keys_in0_mesh:
         relay = relays[relay_key]
 
         if (
-            relay["in_mesh"] == seed_mesh_idx
-            or relay["in2_mesh"] == seed_mesh_idx
+            relay["in0_mesh"] == seed_mesh_idx
+            or relay["in1_mesh"] == seed_mesh_idx
         ):
             if relay["state"] > STATE_ON_GT:
-                connected_meshes.add(relay["out_upper_mesh"])
+                connected_meshes.add(relay["nop_mesh"])
             elif relay["state"] < STATE_OFF_LT:
-                connected_meshes.add(relay["out_lower_mesh"])
+                connected_meshes.add(relay["ncl_mesh"])
 
-        elif relay["out_upper_mesh"] == seed_mesh_idx:
+        elif relay["nop_mesh"] == seed_mesh_idx:
             if relay["state"] >= STATE_ON_GT:
-                connected_meshes.add(relay["in_mesh"])
-                connected_meshes.add(relay["in2_mesh"])
+                connected_meshes.add(relay["in0_mesh"])
+                connected_meshes.add(relay["in1_mesh"])
 
-        elif relay["out_lower_mesh"] == seed_mesh_idx:
+        elif relay["ncl_mesh"] == seed_mesh_idx:
             if relay["state"] < STATE_OFF_LT:
-                connected_meshes.add(relay["in_mesh"])
-                connected_meshes.add(relay["in2_mesh"])
+                connected_meshes.add(relay["in0_mesh"])
+                connected_meshes.add(relay["in1_mesh"])
 
     new_meshes_on_power = connected_meshes.difference(meshes_on_power)
 

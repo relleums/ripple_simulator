@@ -59,12 +59,12 @@ def add_dot(dwg, pos, radius=0.2 * RM_PX, stroke="black", stroke_width=0.2):
 
 
 RELAY_TERMINALS = {
-    "in": (0, 0),
-    "in2": (3, 0),
-    "coil": (0, 4),
-    "coil2": (3, 4),
-    "out_lower": (0, 5),
-    "out_upper": (3, 5),
+    "in0": (0, 0),
+    "in1": (3, 0),
+    "coil0": (0, 4),
+    "coil1": (3, 4),
+    "ncl": (3, 5),
+    "nop": (0, 5),
 }
 
 
@@ -75,8 +75,8 @@ def add_relay(
     state=0,
     power_coil=0,
     power_in=0,
-    power_out_upper=0,
-    power_out_lower=0,
+    power_nop=0,
+    power_ncl=0,
     stroke_width=0.1,
     stroke="black",
 ):
@@ -88,13 +88,13 @@ def add_relay(
     =====
     cC        cD
     +---------+
-    |oUpp oLow|
+    |nop   ncl|
     |         |
-    |coi  coi2|
+    |cl0   cl1|
     |         |
     |         |
     |         |
-    |in    in2|
+    |in0   in1|
     +---------+
     cA        cB
 
@@ -126,10 +126,10 @@ def add_relay(
     add_line(dwg, cC, cA, case_stroke, sw)
 
     if state < simulate.STATE_OFF_LT:
-        sx = -1
+        sx = 1
         coil_fill = "white"
     elif state > simulate.STATE_ON_GT:
-        sx = 1
+        sx = -1
         coil_fill = "red"
     else:
         num_floating_states = simulate.STATE_ON_GT - simulate.STATE_OFF_LT
@@ -158,11 +158,11 @@ def add_relay(
     switch_pos = grid_trans(grid_rot(_switch_pos, rot), pos)
 
     if power_in == 1:
-        add_line(dwg, terminal_pos["in"], terminal_pos["in2"], "red", sw)
+        add_line(dwg, terminal_pos["in0"], terminal_pos["in1"], "red", sw)
         add_line(dwg, in_center, switch_anchor, "red", sw)
         add_line(dwg, switch_pos, switch_anchor, "red", sw)
     add_line(
-        dwg, terminal_pos["in"], terminal_pos["in2"], term_stroke, 0.5 * sw
+        dwg, terminal_pos["in0"], terminal_pos["in1"], term_stroke, 0.5 * sw
     )
     add_line(dwg, in_center, switch_anchor, term_stroke, 0.5 * sw)
     add_line(dwg, switch_pos, switch_anchor, term_stroke, 0.5 * sw)
@@ -355,17 +355,17 @@ def add_curcuit(dwg, circuit, circuit_state):
     for relay_key in cir["relays"]:
         relay = cir["relays"][relay_key]
 
-        in_state = circuit_state["nodes"]["relays/" + relay_key + "/in"]
-        ou_state = circuit_state["nodes"]["relays/" + relay_key + "/out_upper"]
-        ol_state = circuit_state["nodes"]["relays/" + relay_key + "/out_lower"]
+        in_state = circuit_state["nodes"]["relays/" + relay_key + "/in0"]
+        ou_state = circuit_state["nodes"]["relays/" + relay_key + "/nop"]
+        ol_state = circuit_state["nodes"]["relays/" + relay_key + "/ncl"]
         add_relay(
             dwg=dwg,
             pos=relay["pos"],
             rot=relay["rot"],
             state=circuit_state["relays"][relay_key],
             power_in=in_state,
-            power_out_upper=ou_state,
-            power_out_lower=ol_state,
+            power_nop=ou_state,
+            power_ncl=ol_state,
         )
 
         for terminal_key in RELAY_TERMINALS:

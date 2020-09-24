@@ -14,26 +14,26 @@ def gate_and(b=0, c=0, out=0, labels=False):
     cir["relays"]["c"] = {"pos": [2, 0]}
 
     cir["nodes"]["c"] = {"pos": [c, 0]}
-    cir["bars"].append(("nodes/c", "relays/c/coil"))
+    cir["bars"].append(("nodes/c", "relays/c/coil0"))
 
     cir["nodes"]["b"] = {"pos": [b, 7]}
-    cir["bars"].append(("nodes/b", "relays/b/coil"))
+    cir["bars"].append(("nodes/b", "relays/b/coil0"))
 
     cir["nodes"]["n0"] = {"pos": [2, 5]}
-    cir["bars"].append(("relays/c/in", "nodes/n0"))
+    cir["bars"].append(("relays/c/in0", "nodes/n0"))
 
     cir["nodes"]["out"] = {"pos": [8 + out, 5]}
     cir["bars"].append(("nodes/out", "nodes/n0"))
 
     cir["nodes"]["n2"] = {"pos": [7, 10]}
-    cir["bars"].append(("relays/b/out_upper", "nodes/n2"))
+    cir["bars"].append(("relays/b/nop", "nodes/n2"))
 
     cir["nodes"]["n3"] = {"pos": [7, 3]}
     cir["bars"].append(("nodes/n2", "nodes/n3"))
-    cir["bars"].append(("nodes/n3", "relays/c/out_upper"))
+    cir["bars"].append(("nodes/n3", "relays/c/nop"))
 
     cir["nodes"]["V"] = {"pos": [2, 9], "name": "V"}
-    cir["bars"].append(("nodes/V", "relays/b/in"))
+    cir["bars"].append(("nodes/V", "relays/b/in0"))
 
     if labels:
         cir["nodes"]["c"]["name"] = "C"
@@ -50,10 +50,10 @@ def gate_or(b=0, c=0, out=0, labels=False):
     cir["relays"]["c"] = {"pos": [2, 0]}
 
     cir["nodes"]["c"] = {"pos": [c, 0]}
-    cir["bars"].append(("nodes/c", "relays/c/coil"))
+    cir["bars"].append(("nodes/c", "relays/c/coil0"))
 
     cir["nodes"]["b"] = {"pos": [b, 7]}
-    cir["bars"].append(("nodes/b", "relays/b/coil"))
+    cir["bars"].append(("nodes/b", "relays/b/coil0"))
 
     cir["nodes"]["n0"] = {"pos": [7, 5]}
     cir["nodes"]["nb"] = {"pos": [7, 10]}
@@ -64,14 +64,14 @@ def gate_or(b=0, c=0, out=0, labels=False):
     cir["bars"].append(("nodes/nb", "nodes/n0"))
     cir["bars"].append(("nodes/nc", "nodes/n0"))
 
-    cir["bars"].append(("relays/b/out_upper", "nodes/nb"))
-    cir["bars"].append(("relays/c/out_upper", "nodes/nc"))
+    cir["bars"].append(("relays/b/nop", "nodes/nb"))
+    cir["bars"].append(("relays/c/nop", "nodes/nc"))
 
     cir["nodes"]["V"] = {"pos": [1, 9], "name": "V"}
     cir["nodes"]["v2"] = {"pos": [1, 2]}
-    cir["bars"].append(("nodes/V", "relays/b/in"))
+    cir["bars"].append(("nodes/V", "relays/b/in0"))
     cir["bars"].append(("nodes/V", "nodes/v2"))
-    cir["bars"].append(("nodes/v2", "relays/c/in"))
+    cir["bars"].append(("nodes/v2", "relays/c/in0"))
 
     if labels:
         cir["nodes"]["c"]["name"] = "C"
@@ -88,30 +88,30 @@ def gate_xor(b=0, c=0, out=0, labels=False):
     cir["relays"]["c"] = {"pos": [2, 0]}
 
     cir["nodes"]["c"] = {"pos": [c, 0]}
-    cir["bars"].append(("nodes/c", "relays/c/coil"))
+    cir["bars"].append(("nodes/c", "relays/c/coil0"))
 
     cir["nodes"]["b"] = {"pos": [b, 7]}
-    cir["bars"].append(("nodes/b", "relays/b/coil"))
+    cir["bars"].append(("nodes/b", "relays/b/coil0"))
 
     # outer bow
     cir["nodes"]["nbu"] = {"pos": [7, 10]}
-    cir["bars"].append(("relays/b/out_upper", "nodes/nbu"))
+    cir["bars"].append(("relays/b/nop", "nodes/nbu"))
     cir["nodes"]["ncl"] = {"pos": [7, 1]}
     cir["bars"].append(("nodes/nbu", "nodes/ncl"))
-    cir["bars"].append(("relays/c/out_lower", "nodes/ncl"))
+    cir["bars"].append(("relays/c/ncl", "nodes/ncl"))
 
     # inner bow
-    cir["bars"].append(("relays/c/out_upper", "relays/b/out_lower"))
+    cir["bars"].append(("relays/c/nop", "relays/b/ncl"))
 
     # out
     cir["nodes"]["o0"] = {"pos": [2, 5]}
-    cir["bars"].append(("relays/c/in", "nodes/o0"))
+    cir["bars"].append(("relays/c/in0", "nodes/o0"))
     cir["nodes"]["out"] = {"pos": [8 + out, 5]}
     cir["bars"].append(("nodes/out", "nodes/o0"))
 
     # V
     cir["nodes"]["V"] = {"pos": [2, 9], "name": "V"}
-    cir["bars"].append(("nodes/V", "relays/b/in"))
+    cir["bars"].append(("nodes/V", "relays/b/in0"))
 
     if labels:
         cir["nodes"]["c"]["name"] = "C"
@@ -127,17 +127,17 @@ def gate_not(b=0, out=0, labels=False):
     cir["relays"]["b"] = {"pos": [0, 7]}
 
     cir["nodes"]["b"] = {"pos": [b, 7]}
-    cir["bars"].append(("nodes/b", "relays/b/coil"))
+    cir["bars"].append(("nodes/b", "relays/b/coil0"))
 
     # out
     cir["nodes"]["out"] = {"pos": [5 + out, 7]}
     cir["nodes"]["n"] = {"pos": [4 + out, 7]}
-    cir["bars"].append(("nodes/n", "relays/b/out_lower"))
+    cir["bars"].append(("nodes/n", "relays/b/ncl"))
     cir["bars"].append(("nodes/n", "nodes/out"))
 
     # V
     cir["nodes"]["V"] = {"pos": [0, 9], "name": "V"}
-    cir["bars"].append(("nodes/V", "relays/b/in"))
+    cir["bars"].append(("nodes/V", "relays/b/in0"))
 
     if labels:
         cir["nodes"]["b"]["name"] = "B"
@@ -152,19 +152,19 @@ def gate_unity(b=0, out=0, labels=False):
     cir["relays"]["b"] = {"pos": [0, 7]}
 
     cir["nodes"]["b"] = {"pos": [b, 7]}
-    cir["bars"].append(("nodes/b", "relays/b/coil"))
+    cir["bars"].append(("nodes/b", "relays/b/coil0"))
 
     # out
     cir["nodes"]["out"] = {"pos": [5 + out, 7]}
     cir["nodes"]["n1"] = {"pos": [5, 7]}
     cir["nodes"]["n0"] = {"pos": [5, 10]}
-    cir["bars"].append(("nodes/n0", "relays/b/out_upper"))
+    cir["bars"].append(("nodes/n0", "relays/b/nop"))
     cir["bars"].append(("nodes/n0", "nodes/n1"))
     cir["bars"].append(("nodes/out", "nodes/n1"))
 
     # V
     cir["nodes"]["V"] = {"pos": [0, 9], "name": "V"}
-    cir["bars"].append(("nodes/V", "relays/b/in"))
+    cir["bars"].append(("nodes/V", "relays/b/in0"))
 
     if labels:
         cir["nodes"]["b"]["name"] = "B"
@@ -228,9 +228,9 @@ def full_adder(labels=True):
 
     cir = build.merge_circuits([ha1, ha2, or_])
 
-    cir["nodes"]["c_in"] = {"pos": [0, 36], "name": "Cin"}
+    cir["nodes"]["c_in0"] = {"pos": [0, 36], "name": "Cin0"}
     cir["nodes"]["c_in_0"] = {"pos": [14, 36]}
-    cir["bars"].append(("nodes/c_in", "nodes/c_in_0"))
+    cir["bars"].append(("nodes/c_in0", "nodes/c_in_0"))
     cir["bars"].append(("nodes/c_in_0", "nodes/HA2_XOR_c"))
 
     cir["nodes"]["b"] = {"pos": [0, 34], "name": "B"}

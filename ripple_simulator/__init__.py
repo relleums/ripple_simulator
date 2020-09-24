@@ -132,27 +132,27 @@ def compile_relay_meshes(circuit):
         relays[relay_key] = {}
         relays[relay_key]["state"] = simulate.STATE_FULLY_OFF
 
-        in_key = "relays" + "/" + relay_key + "/" + "in"
-        in2_key = "relays" + "/" + relay_key + "/" + "in2"
-        outl_key = "relays" + "/" + relay_key + "/" + "out_lower"
-        outu_key = "relays" + "/" + relay_key + "/" + "out_upper"
-        coil_key = "relays" + "/" + relay_key + "/" + "coil"
-        coil2_key = "relays" + "/" + relay_key + "/" + "coil2"
+        in_key = "relays" + "/" + relay_key + "/" + "in0"
+        in1_key = "relays" + "/" + relay_key + "/" + "in1"
+        outl_key = "relays" + "/" + relay_key + "/" + "ncl"
+        outu_key = "relays" + "/" + relay_key + "/" + "nop"
+        coil0_key = "relays" + "/" + relay_key + "/" + "coil0"
+        coil1_key = "relays" + "/" + relay_key + "/" + "coil1"
 
         for meshidx, mesh in enumerate(meshes):
             for node_key in mesh:
                 if node_key == in_key:
-                    relays[relay_key]["in_mesh"] = meshidx
-                if node_key == in2_key:
-                    relays[relay_key]["in2_mesh"] = meshidx
+                    relays[relay_key]["in0_mesh"] = meshidx
+                if node_key == in1_key:
+                    relays[relay_key]["in1_mesh"] = meshidx
                 if node_key == outl_key:
-                    relays[relay_key]["out_lower_mesh"] = meshidx
+                    relays[relay_key]["ncl_mesh"] = meshidx
                 if node_key == outu_key:
-                    relays[relay_key]["out_upper_mesh"] = meshidx
-                if node_key == coil_key:
-                    relays[relay_key]["coil_mesh"] = meshidx
-                if node_key == coil2_key:
-                    relays[relay_key]["coil2_mesh"] = meshidx
+                    relays[relay_key]["nop_mesh"] = meshidx
+                if node_key == coil0_key:
+                    relays[relay_key]["coil0_mesh"] = meshidx
+                if node_key == coil1_key:
+                    relays[relay_key]["coil1_mesh"] = meshidx
 
     capacitors = {}
     for cap_key in circuit["capacitors"]:
