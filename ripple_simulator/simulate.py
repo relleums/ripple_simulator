@@ -54,6 +54,11 @@ def walk_meshes_on_power(meshes_on_power, meshes, seed_mesh_idx, relays):
             elif relay["state"] < STATE_OFF_LT:
                 connected_meshes.add(relay["ncl_mesh"])
 
+            if relay["in0_mesh"] == seed_mesh_idx:
+                connected_meshes.add(relay["in1_mesh"])
+            if relay["in1_mesh"] == seed_mesh_idx:
+                connected_meshes.add(relay["in0_mesh"])
+
         elif relay["nop_mesh"] == seed_mesh_idx:
             if relay["state"] >= STATE_ON_GT:
                 connected_meshes.add(relay["in0_mesh"])
