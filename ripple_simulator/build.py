@@ -1,3 +1,18 @@
+def add_trace(circuit, prefix, start_node, stop_node, trace=[]):
+    num_bars = len(trace) + 1
+
+    last_node = str(start_node)
+    for n in range(num_bars - 1):
+        node_name = "{:s}_{:03d}".format(prefix, n)
+        node_key = "nodes/" + node_name
+        circuit["nodes"][node_name] = {"pos": trace[n]}
+        circuit["bars"].append((last_node, node_key))
+        last_node = str(node_key)
+
+    circuit["bars"].append((last_node, stop_node))
+    return circuit
+
+
 def empty_circuit():
     cir = {}
     cir["relays"] = {}

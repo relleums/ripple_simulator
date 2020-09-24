@@ -14,8 +14,8 @@ my_circuit = {
 reg = ris.harry_porter_computer.make_register()
 clk0 = ris.harry_porter_computer.make_clock(periode=100)
 
-clk1 = ris.build.add_group_name(circuit=clk0, name="CLOCK")
-clk = ris.build.translate(circuit=clk1, pos=[0, 0])
+clk2 = ris.build.add_group_name(circuit=clk0, name="CLOCK")
+clk = ris.build.translate(circuit=clk2, pos=[0, 0])
 
 """
 reg_B = ris.add_group_name(circuit=reg, name="REGISTER-B")

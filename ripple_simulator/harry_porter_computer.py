@@ -32,10 +32,7 @@ def make_register(num_bits=8):
         )
     for bit in range(num_bits):
         cir["bars"].append(
-            (
-                "nodes/hold_{:d}".format(bit),
-                "relays/bit_{:d}/nop".format(bit),
-            )
+            ("nodes/hold_{:d}".format(bit), "relays/bit_{:d}/nop".format(bit),)
         )
 
     for bit in range(num_bits):
@@ -172,63 +169,65 @@ def make_register(num_bits=8):
 
 
 def make_clock(periode):
-    relays = {}
-    caps = {}
-    nodes = {}
-    bars = []
+    cir = build.empty_circuit()
 
-    nodes["VCLK"] = {"pos": [0, 36], "name": "VCLK"}
-    nodes["v_end"] = {"pos": [6, 36]}
-    bars.append(("nodes/VCLK", "nodes/v_end"))
+    cir["nodes"]["VCLK"] = {"pos": [0, 36], "name": "VCLK"}
+    cir["nodes"]["v_end"] = {"pos": [6, 36]}
+    cir["bars"].append(("nodes/VCLK", "nodes/v_end"))
 
     DY = 5
     for i in range(4):
         ii = 4 - i
         rkey = "R{:d}".format(ii)
-        relays[rkey] = {"pos": [6, ii * DY + 8], "rot": 1}
+        cir["relays"][rkey] = {"pos": [6, ii * DY + 8], "rot": 1}
 
         nkey = "n{:d}".format(ii)
-        nodes[nkey] = {"pos": [10, ii * DY + 7]}
+        cir["nodes"][nkey] = {"pos": [10, ii * DY + 7]}
 
         ckey = "C{:d}".format(ii)
-        caps[ckey] = {"pos": [4, ii * DY + 7], "rot": 2, "capacity": periode}
-        bars.append(("capacitors/" + ckey, "nodes/" + nkey))
-        bars.append(("nodes/" + nkey, "relays/" + rkey + "/coil0"))
+        cir["capacitors"][ckey] = {
+            "pos": [4, ii * DY + 7],
+            "rot": 2,
+            "capacity": periode,
+        }
+        cir["bars"].append(("capacitors/" + ckey, "nodes/" + nkey))
+        cir["bars"].append(("nodes/" + nkey, "relays/" + rkey + "/coil0"))
 
         if ii > 1:
             prev_rkey = "R{:d}".format(ii - 1)
-            bars.append(
+            cir["bars"].append(
                 ("relays/" + rkey + "/in1", "relays/" + prev_rkey + "/in0")
             )
 
-    bars.append(("relays/R4/in0", "nodes/v_end"))
-
+    cir["bars"].append(("relays/R4/in0", "nodes/v_end"))
 
     # FRZ
-    nodes["FRZ"] = {"pos": [0, 43], "name": "FRZ"}
+    cir["nodes"]["FRZ"] = {"pos": [0, 43], "name": "FRZ"}
 
-    relays["FRZ_33"] = {"pos": [15, 3], "rot": 0}
-    relays["FRZ_12"] = {"pos": [20, 3], "rot": 0}
+    cir["relays"]["FRZ_33"] = {"pos": [15, 3], "rot": 0}
+    cir["relays"]["FRZ_12"] = {"pos": [20, 3], "rot": 0}
 
     # CYCLE 32
-    relays["CYC32"] = {"pos": [16, 35], "rot": 2}
+    cir["relays"]["CYC32"] = {"pos": [16, 35], "rot": 2}
 
     # CYCLE 22
-    relays["CYC22"] = {"pos": [21, 35], "rot": 2}
+    cir["relays"]["CYC22"] = {"pos": [21, 35], "rot": 2}
 
     # CYCLE 14
-    relays["CYC14"] = {"pos": [26, 35], "rot": 2}
+    cir["relays"]["CYC14"] = {"pos": [26, 35], "rot": 2}
 
     # XOR
-    relays["XOR4"] = {"pos": [33, 20], "rot": 3}
-    relays["XOR3"] = {"pos": [33, 25], "rot": 3}
+    cir["relays"]["XOR4"] = {"pos": [33, 20], "rot": 3}
+    cir["relays"]["XOR3"] = {"pos": [33, 25], "rot": 3}
 
-    nodes["CLK"] = {"pos": [51, 40], "name": "CLK"}
+    cir["nodes"]["CLK"] = {"pos": [51, 40], "name": "CLK"}
 
-    clk = {}
-    clk["nodes"] = nodes
-    clk["relays"] = relays
-    clk["bars"] = bars
-    clk["capacitors"] = caps
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="w",
+        start_node="relays/R4/nop",
+        stop_node="relays/CYC32/in0",
+        trace=[[15, 28], [15, 35]],
+    )
 
-    return clk
+    return cir
