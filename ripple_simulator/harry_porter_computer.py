@@ -175,21 +175,29 @@ def make_clock(periode):
     nodes = {}
     bars = []
 
-    RM_Y = 7
-    RM_X = 7
-    for i in range(4):
-        ii = 4 - i
-        key = "R{:d}".format(ii)
-        relays[key] = {"pos": [RM_X, ii * RM_Y + 3], "rot": 1}
-
-        ckey = "C{:d}".format(ii)
-        caps[ckey] = {"pos": [RM_X - 4, ii * RM_Y + 3], "capacity": periode}
-        bars.append(("capacitors/" + ckey, "relays/" + key + "/coil"))
-
     nodes["VCLK"] = {"pos": [0, 36], "name": "VCLK"}
     nodes["v_end"] = {"pos": [48, 36]}
     bars.append(("nodes/VCLK", "nodes/v_end"))
 
+    DY = 5
+    for i in range(4):
+        ii = 4 - i
+        rkey = "R{:d}".format(ii)
+        relays[rkey] = {"pos": [6, ii * DY + 8], "rot": 1}
+
+        nkey = "n{:d}".format(ii)
+        nodes[nkey] = {"pos": [10, ii * DY + 7]}
+
+        ckey = "C{:d}".format(ii)
+        caps[ckey] = {"pos": [4, ii * DY + 7], "rot": 2, "capacity": periode}
+        bars.append(("capacitors/" + ckey, "nodes/" + nkey))
+        bars.append(("nodes/" + nkey, "relays/" + rkey + "/coil"))
+
+        if ii > 1:
+            prev_rkey = "R{:d}".format(ii - 1)
+            bars.append(("relays/" + rkey + "/in2", "relays/" + prev_rkey + "/in"))
+
+    """
     nodes["v"] = {"pos": [6, 36]}
     bars.append(("nodes/v", "nodes/VCLK"))
 
@@ -271,65 +279,22 @@ def make_clock(periode):
                 "nodes/anti_{:d}_{:d}".format(ii, x_start),
             )
         )
-
+    """
     # FRZ
     nodes["FRZ"] = {"pos": [0, 43], "name": "FRZ"}
-    nodes["frz0"] = {"pos": [17, 43]}
-    nodes["frz1"] = {"pos": [24, 43]}
-    bars.append(("nodes/FRZ", "nodes/frz0"))
-    bars.append(("nodes/frz0", "nodes/frz1"))
 
-    relays["FRZ_33"] = {"pos": [16, 38], "rot": 2}
-    nodes["FRZ_coil_3"] = {"pos": [12, 5 * RM_Y + 5]}
-    bars.append(("nodes/FRZ_coil_3", "relays/FRZ_33/in"))
-    bars.append(("nodes/coil_3_12", "nodes/FRZ_coil_3"))
-    bars.append(("relays/FRZ_33/coil", "nodes/unity_3_13"))
-    bars.append(("nodes/frz0", "relays/FRZ_33/out_upper"))
-
-    relays["FRZ_12"] = {"pos": [24, 38], "rot": 2}
-    nodes["FRZ_coil_1"] = {"pos": [19, 5 * RM_Y + 5]}
-    bars.append(("nodes/FRZ_coil_1", "relays/FRZ_12/in"))
-    bars.append(("nodes/coil_1_19", "nodes/FRZ_coil_1"))
-    bars.append(("relays/FRZ_12/coil", "nodes/unity_1_20"))
-    bars.append(("nodes/frz1", "relays/FRZ_12/out_upper"))
+    relays["FRZ_33"] = {"pos": [19, 35], "rot": 2}
+    relays["FRZ_12"] = {"pos": [24, 35], "rot": 2}
 
     # CYCLE 32
-    relays["CYC32"] = {"pos": [4 * RM_X - 1, 0 * RM_Y + 3], "rot": 0}
-    nodes["cyc32_coil"] = {"pos": [4 * RM_X - 2, 0 * RM_Y + 3]}
-    bars.append(("relays/CYC32/coil", "nodes/cyc32_coil"))
-    bars.append(("nodes/cyc32_coil", "nodes/unity_3_26"))
-
-    nodes["cyc32_out_lower"] = {"pos": [4 * RM_X + 4, 0 * RM_Y + 4]}
-    bars.append(("relays/CYC32/out_lower", "nodes/cyc32_out_lower"))
-    bars.append(("nodes/cyc32_out_lower", "nodes/coil_1_32"))
-
-    bars.append(("relays/CYC32/in", "nodes/anti_2_27"))
-    bars.append(("relays/CYC32/out_upper", "nodes/coil_4_31"))
+    relays["CYC32"] = {"pos": [13, 3], "rot": 0}
 
     # CYCLE 22
-    relays["CYC22"] = {"pos": [5 * RM_X - 1, 0 * RM_Y + 3], "rot": 0}
-    nodes["cyc22_coil"] = {"pos": [5 * RM_X - 2, 0 * RM_Y + 3]}
-    bars.append(("relays/CYC22/coil", "nodes/cyc22_coil"))
-    bars.append(("nodes/cyc22_coil", "nodes/unity_2_33"))
-
-    nodes["cyc22_out_lower"] = {"pos": [5 * RM_X + 4, 0 * RM_Y + 4]}
-    bars.append(("relays/CYC22/out_lower", "nodes/cyc22_out_lower"))
-
-    bars.append(("relays/CYC22/in", "nodes/anti_1_34"))
-    bars.append(("relays/CYC22/out_upper", "nodes/coil_3_38"))
+    relays["CYC22"] = {"pos": [18, 3], "rot": 0}
 
     # CYCLE 14
-    relays["CYC14"] = {"pos": [6 * RM_X - 1, 0 * RM_Y + 3], "rot": 0}
-    nodes["cyc14_coil"] = {"pos": [6 * RM_X - 2, 0 * RM_Y + 3]}
-    bars.append(("relays/CYC14/coil", "nodes/cyc14_coil"))
-    bars.append(("nodes/cyc14_coil", "nodes/unity_1_40"))
-
-    nodes["cyc14_out_lower"] = {"pos": [6 * RM_X + 4, 0 * RM_Y + 4]}
-    bars.append(("relays/CYC14/out_lower", "nodes/cyc14_out_lower"))
-
-    bars.append(("relays/CYC14/out_upper", "nodes/coil_2_45"))
-    bars.append(("relays/CYC14/in", "nodes/anti_4_41"))
-
+    relays["CYC14"] = {"pos": [23, 3], "rot": 0}
+    """
     # XOR
     relays["XOR4"] = {"pos": [7 * RM_X + 2, 4 * RM_Y + 6], "rot": 3}
     relays["XOR3"] = {"pos": [7 * RM_X + 2, 3 * RM_Y + 6], "rot": 3}
@@ -337,8 +302,9 @@ def make_clock(periode):
     bars.append(("relays/XOR3/coil", "nodes/unity_3_48"))
     bars.append(("relays/XOR3/out_upper", "relays/XOR4/out_lower"))
 
+    """
     nodes["CLK"] = {"pos": [51, 40], "name": "CLK"}
-
+    """
     nodes["vxor0"] = {"pos": [50, 36]}
     nodes["vxor1"] = {"pos": [50, 29]}
     bars.append(("relays/XOR4/in", "nodes/CLK"))
@@ -350,6 +316,7 @@ def make_clock(periode):
     bars.append(("nodes/xor_3", "nodes/xor_4"))
     bars.append(("nodes/xor_3", "relays/XOR3/out_lower"))
     bars.append(("nodes/xor_4", "relays/XOR4/out_upper"))
+    """
 
     clk = {}
     clk["nodes"] = nodes
