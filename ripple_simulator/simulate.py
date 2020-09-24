@@ -45,7 +45,7 @@ def walk_meshes_on_power(meshes_on_power, meshes, seed_mesh_idx, relays):
     for relay_key in relay_keys_in_mesh:
         relay = relays[relay_key]
 
-        if relay["in_mesh"] == seed_mesh_idx:
+        if relay["in_mesh"] == seed_mesh_idx or relay["in2_mesh"] == seed_mesh_idx:
             if relay["state"] > STATE_ON_GT:
                 connected_meshes.add(relay["out_upper_mesh"])
             elif relay["state"] < STATE_OFF_LT:
@@ -54,10 +54,12 @@ def walk_meshes_on_power(meshes_on_power, meshes, seed_mesh_idx, relays):
         elif relay["out_upper_mesh"] == seed_mesh_idx:
             if relay["state"] >= STATE_ON_GT:
                 connected_meshes.add(relay["in_mesh"])
+                connected_meshes.add(relay["in2_mesh"])
 
         elif relay["out_lower_mesh"] == seed_mesh_idx:
             if relay["state"] < STATE_OFF_LT:
                 connected_meshes.add(relay["in_mesh"])
+                connected_meshes.add(relay["in2_mesh"])
 
     new_meshes_on_power = connected_meshes.difference(meshes_on_power)
 

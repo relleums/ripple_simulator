@@ -176,7 +176,7 @@ def make_clock(periode):
     bars = []
 
     nodes["VCLK"] = {"pos": [0, 36], "name": "VCLK"}
-    nodes["v_end"] = {"pos": [48, 36]}
+    nodes["v_end"] = {"pos": [6, 36]}
     bars.append(("nodes/VCLK", "nodes/v_end"))
 
     DY = 5
@@ -196,6 +196,8 @@ def make_clock(periode):
         if ii > 1:
             prev_rkey = "R{:d}".format(ii - 1)
             bars.append(("relays/" + rkey + "/in2", "relays/" + prev_rkey + "/in"))
+
+    bars.append(("relays/R4/in", "nodes/v_end"))
 
     """
     nodes["v"] = {"pos": [6, 36]}
@@ -294,15 +296,11 @@ def make_clock(periode):
 
     # CYCLE 14
     relays["CYC14"] = {"pos": [23, 3], "rot": 0}
-    """
-    # XOR
-    relays["XOR4"] = {"pos": [7 * RM_X + 2, 4 * RM_Y + 6], "rot": 3}
-    relays["XOR3"] = {"pos": [7 * RM_X + 2, 3 * RM_Y + 6], "rot": 3}
-    bars.append(("relays/XOR4/coil", "nodes/unity_4_48"))
-    bars.append(("relays/XOR3/coil", "nodes/unity_3_48"))
-    bars.append(("relays/XOR3/out_upper", "relays/XOR4/out_lower"))
 
-    """
+    # XOR
+    relays["XOR4"] = {"pos": [33, 20], "rot": 3}
+    relays["XOR3"] = {"pos": [33, 25], "rot": 3}
+
     nodes["CLK"] = {"pos": [51, 40], "name": "CLK"}
     """
     nodes["vxor0"] = {"pos": [50, 36]}

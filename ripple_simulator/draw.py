@@ -4,7 +4,7 @@ import svgwrite
 from . import simulate
 
 
-RM_PX = 16
+RM_PX = 27
 
 GRID_WIDTH_Y = 39
 GRID_WIDTH_X = 63
@@ -75,12 +75,12 @@ def add_relay(
     power_in=0,
     power_out_upper=0,
     power_out_lower=0,
-    stroke_width=2.0,
+    stroke_width=0.1,
     stroke="black",
 ):
     case_stroke = svgwrite.rgb(75, 75, 75, '%')
     term_stroke = svgwrite.rgb(50, 50, 50, '%')
-    sw = stroke_width
+    sw = stroke_width * RM_PX
     """
     frame
     =====
@@ -175,7 +175,10 @@ def add_grid(
     dwg.add(
         dwg.rect(
             (0, 0),
-            (size[0] * RM_PX, size[1] * RM_PX),
+            (
+                (size[0] + GRID_START_X + 3) * RM_PX,
+                (size[1] + GRID_START_Y + 3) * RM_PX
+            ),
             stroke="none",
             stroke_width=0,
             fill=fill,
@@ -217,11 +220,11 @@ def add_grid(
 
 
 def add_bar(
-    dwg, start=(0, 0), stop=(1, 1), stroke_width=2.0, stroke="black", power=0
+    dwg, start=(0, 0), stop=(1, 1), stroke_width=0.15, stroke="black", power=0
 ):
     if power == 1:
-        add_line(dwg, start, stop, "red", 2*stroke_width)
-    add_line(dwg, start, stop, stroke, stroke_width)
+        add_line(dwg, start, stop, "red", 2*stroke_width*RM_PX)
+    add_line(dwg, start, stop, stroke, stroke_width*RM_PX)
 
 
 def add_capacitor(
@@ -377,6 +380,8 @@ def add_curcuit(dwg, circuit, circuit_state):
                 stop=stop,
                 power=circuit_state["bars"][bar_idx],
             )
+        elif bar[2] == "transparent":
+            pass
         else:
             add_bar(
                 dwg=dwg,
