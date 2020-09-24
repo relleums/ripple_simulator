@@ -15,14 +15,12 @@ reg = ris.harry_porter_computer.make_register()
 clk0 = ris.harry_porter_computer.make_clock(periode=100)
 
 clk2 = ris.build.add_group_name(circuit=clk0, name="CLOCK")
-clk = ris.build.translate(circuit=clk2, pos=[0, 0])
+clk = ris.build.translate(circuit=clk2, pos=[0, 100])
 
-"""
-reg_B = ris.add_group_name(circuit=reg, name="REGISTER-B")
-reg_B = ris.translate(circuit=reg_B, pos=[64, 0])
-"""
+reg_B = ris.build.add_group_name(circuit=reg, name="REGISTER-B")
+reg_B = ris.build.translate(circuit=reg_B, pos=[0, 0])
 
-cir = ris.build.merge_circuits([clk,])
+cir = ris.build.merge_circuits([reg_B])
 cir["nodes"]["V"] = {"pos": [0, 0], "name": "V"}
 
 # connect all Vs
@@ -31,7 +29,7 @@ for node_key in cir["nodes"]:
         print(node_key)
         cir["bars"].append(("nodes/V", "nodes/" + node_key, "transparent"))
 
-cir["bars"].append(("nodes/V", "nodes/CLOCK_VCLK", "transparent"))
+# cir["bars"].append(("nodes/V", "nodes/CLOCK_VCLK", "transparent"))
 
 circuit = ris.compile(circuit=cir)
 
@@ -53,7 +51,7 @@ clock_pegels = []
 
 # run ripple simulation
 # ---------------------
-for step in range(1000):
+for step in range(1):
     relays, capacitors, meshes_on_power = ris.simulate.one_step(
         relays=relays,
         capacitors=capacitors,
@@ -75,6 +73,6 @@ for step in range(1000):
     )
 
     # print(step, circuit_state["relays"]["REGISTER-B_select"])
-    print(step, circuit_state["nodes"]["nodes/CLOCK_CLK"])
+    # print(step, circuit_state["nodes"]["nodes/CLOCK_CLK"])
     steps.append(step)
-    clock_pegels.append(circuit_state["nodes"]["nodes/CLOCK_CLK"])
+    # clock_pegels.append(circuit_state["nodes"]["nodes/CLOCK_CLK"])
