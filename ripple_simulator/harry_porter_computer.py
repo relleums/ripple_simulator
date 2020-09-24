@@ -225,9 +225,81 @@ def make_clock(periode):
     cir = build.add_trace(
         circuit=cir,
         prefix="w",
-        start_node="relays/R4/nop",
+        start_node="relays/R1/ncl",
+        stop_node="relays/CYC14/in0",
+        trace=[[27, 10], [27, 35]],
+    )
+
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="wa",
+        start_node="relays/R1/coil0",
+        stop_node="relays/CYC32/nop",
+        trace=[[10, 14], [16, 14],],
+    )
+
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="wb",
+        start_node="relays/R2/nop",
+        stop_node="relays/CYC32/coil0",
+        trace=[[15, 18], [15, 31]],
+    )
+
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="w3",
+        start_node="relays/R2/coil0",
+        stop_node="relays/CYC22/nop",
+        trace=[[10, 19], [21, 19]],
+    )
+
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="w4",
+        start_node="relays/R3/ncl",
         stop_node="relays/CYC32/in0",
-        trace=[[15, 28], [15, 35]],
+        trace=[[17, 20], [17, 35]],
+    )
+
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="w5",
+        start_node="relays/R3/nop",
+        stop_node="relays/CYC22/coil0",
+        trace=[[20, 23], [20, 31]],
+    )
+
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="w6",
+        start_node="relays/R3/coil0",
+        stop_node="relays/CYC14/nop",
+        trace=[[10, 24], [26, 24]],
+    )
+
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="w7",
+        start_node="relays/R4/ncl",
+        stop_node="relays/CYC22/in0",
+        trace=[[22, 25], [22, 35]],
+    )
+
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="w8",
+        start_node="relays/R4/nop",
+        stop_node="relays/CYC14/coil0",
+        trace=[[25, 28], [25, 31]],
+    )
+
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="w9",
+        start_node="relays/R4/coil0",
+        stop_node="relays/CYC32/ncl",
+        trace=[[10, 29], [13, 29]],
     )
 
     return cir

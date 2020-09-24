@@ -133,7 +133,7 @@ def add_relay(
         coil_fill = "red"
     else:
         num_floating_states = simulate.STATE_ON_GT - simulate.STATE_OFF_LT
-        sx = (state - simulate.STATE_OFF_LT) / num_floating_states - 0.5
+        sx = -((state - simulate.STATE_OFF_LT) / num_floating_states) + 0.5
         coil_fill = "orange"
     dwg.add(
         dwg.circle(
@@ -232,10 +232,10 @@ def add_bar(
 
 def add_capacitor(
     dwg,
-    pos=(0, 0),
-    rot=0,
-    capacity=10,
-    state=5,
+    pos,
+    rot,
+    capacity,
+    state,
     stroke_width=2.0,
     stroke="black",
 ):
@@ -270,20 +270,6 @@ def add_capacitor(
     add_dot(dwg, term0, 0.1 * RM_PX, stroke, sw)
     add_dot(dwg, term1, 0.1 * RM_PX, stroke, sw)
 
-    _rect_corner = (0.75, 0.75)
-    rect_corner = grid_trans(grid_rot(_rect_corner, rot), pos)
-    _rect_fill = (1.5 * fill, 0.5)
-    rect_fill = grid_rot(_rect_fill, rot)
-
-    dwg.add(
-        dwg.rect(
-            grid_xy(rect_corner[0], rect_corner[1]),
-            (rect_fill[0] * RM_PX, rect_fill[1] * RM_PX),
-            stroke="none",
-            stroke_width=0,
-            fill="red",
-        )
-    )
     add_line(dwg, c0, c1, stroke, 0.5 * sw)
     add_line(dwg, c2, c3, stroke, 0.5 * sw)
     dwg.add(
@@ -292,7 +278,7 @@ def add_capacitor(
             0.9 * RM_PX,
             stroke=case_stroke,
             stroke_width=sw,
-            fill="none",
+            fill=svgwrite.rgb(100.0*fill, 0, 0, "%"),
         )
     )
 

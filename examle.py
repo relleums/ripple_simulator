@@ -53,7 +53,7 @@ clock_pegels = []
 
 # run ripple simulation
 # ---------------------
-for step in range(1):
+for step in range(1000):
     relays, capacitors, meshes_on_power = ris.simulate.one_step(
         relays=relays,
         capacitors=capacitors,
