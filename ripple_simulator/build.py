@@ -1,4 +1,3 @@
-
 def empty_circuit():
     cir = {}
     cir["relays"] = {}

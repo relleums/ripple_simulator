@@ -22,7 +22,7 @@ reg_B = ris.add_group_name(circuit=reg, name="REGISTER-B")
 reg_B = ris.translate(circuit=reg_B, pos=[64, 0])
 """
 
-cir = ris.build.merge_circuits([clk, ])
+cir = ris.build.merge_circuits([clk,])
 cir["nodes"]["V"] = {"pos": [0, 0], "name": "V"}
 
 # connect all Vs
@@ -78,5 +78,3 @@ for step in range(1):
     print(step, circuit_state["nodes"]["nodes/CLOCK_CLK"])
     steps.append(step)
     clock_pegels.append(circuit_state["nodes"]["nodes/CLOCK_CLK"])
-
-

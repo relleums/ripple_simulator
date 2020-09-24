@@ -11,12 +11,14 @@ def make_register(num_bits=8):
 
     for bit in range(num_bits):
         cir["relays"]["bit_{:d}".format(bit)] = {
-            "pos": [x + 2 + bit * 6, y + 18], "rot": 0
+            "pos": [x + 2 + bit * 6, y + 18],
+            "rot": 0,
         }
 
     for bit in range(num_bits):
         cir["relays"]["enable_{:d}".format(bit)] = {
-            "pos": [x + 2 + bit * 6, y + 12], "rot": 0
+            "pos": [x + 2 + bit * 6, y + 12],
+            "rot": 0,
         }
 
     for bit in range(num_bits):
@@ -195,7 +197,9 @@ def make_clock(periode):
 
         if ii > 1:
             prev_rkey = "R{:d}".format(ii - 1)
-            bars.append(("relays/" + rkey + "/in2", "relays/" + prev_rkey + "/in"))
+            bars.append(
+                ("relays/" + rkey + "/in2", "relays/" + prev_rkey + "/in")
+            )
 
     bars.append(("relays/R4/in", "nodes/v_end"))
 

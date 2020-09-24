@@ -6,6 +6,7 @@ GATE_B_POS = [0, 7]
 GATE_C_POS = [0, 0]
 GATE_OUT_POS = [8, 5]
 
+
 def gate_and(b=0, c=0, out=0, labels=False):
     cir = build.empty_circuit()
 
@@ -169,7 +170,6 @@ def gate_unity(b=0, out=0, labels=False):
         cir["nodes"]["b"]["name"] = "B"
         cir["nodes"]["out"]["name"] = "UNITY(B)"
 
-
     return cir
 
 
@@ -245,7 +245,5 @@ def full_adder(labels=True):
     cir["nodes"]["c_out_0"] = {"pos": [32, 0]}
     cir["bars"].append(("nodes/c_out_0", "nodes/OR_out"))
     cir["bars"].append(("nodes/c_out_0", "nodes/c_out"))
-
-
 
     return cir

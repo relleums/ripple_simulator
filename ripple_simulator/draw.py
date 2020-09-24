@@ -46,6 +46,7 @@ def add_line(dwg, start, stop, stroke, stroke_width):
         )
     )
 
+
 def add_dot(dwg, pos, radius=0.2 * RM_PX, stroke="black", stroke_width=0.2):
     dwg.add(
         dwg.circle(
@@ -55,6 +56,7 @@ def add_dot(dwg, pos, radius=0.2 * RM_PX, stroke="black", stroke_width=0.2):
             stroke_width=stroke_width,
         )
     )
+
 
 RELAY_TERMINALS = {
     "in": (0, 0),
@@ -78,8 +80,8 @@ def add_relay(
     stroke_width=0.1,
     stroke="black",
 ):
-    case_stroke = svgwrite.rgb(75, 75, 75, '%')
-    term_stroke = svgwrite.rgb(50, 50, 50, '%')
+    case_stroke = svgwrite.rgb(75, 75, 75, "%")
+    term_stroke = svgwrite.rgb(50, 50, 50, "%")
     sw = stroke_width * RM_PX
     """
     frame
@@ -118,7 +120,6 @@ def add_relay(
     coil_center = grid_trans(grid_rot(_coil_center, rot), pos)
     in_center = grid_trans(grid_rot(_in_center, rot), pos)
 
-
     add_line(dwg, cA, cB, case_stroke, sw)
     add_line(dwg, cB, cD, case_stroke, sw)
     add_line(dwg, cD, cC, case_stroke, sw)
@@ -153,16 +154,18 @@ def add_relay(
         terminal_pos[terminal_key] = t_pos_r
         add_dot(dwg, (t_pos_r[0], t_pos_r[1]), 0.1 * RM_PX, term_stroke, sw)
 
-    _switch_pos = (1.5*sx + 1.5, 5)
+    _switch_pos = (1.5 * sx + 1.5, 5)
     switch_pos = grid_trans(grid_rot(_switch_pos, rot), pos)
 
     if power_in == 1:
         add_line(dwg, terminal_pos["in"], terminal_pos["in2"], "red", sw)
         add_line(dwg, in_center, switch_anchor, "red", sw)
         add_line(dwg, switch_pos, switch_anchor, "red", sw)
-    add_line(dwg, terminal_pos["in"], terminal_pos["in2"], term_stroke, 0.5*sw)
-    add_line(dwg, in_center, switch_anchor, term_stroke, 0.5*sw)
-    add_line(dwg, switch_pos, switch_anchor, term_stroke, 0.5*sw)
+    add_line(
+        dwg, terminal_pos["in"], terminal_pos["in2"], term_stroke, 0.5 * sw
+    )
+    add_line(dwg, in_center, switch_anchor, term_stroke, 0.5 * sw)
+    add_line(dwg, switch_pos, switch_anchor, term_stroke, 0.5 * sw)
 
 
 def add_grid(
@@ -177,7 +180,7 @@ def add_grid(
             (0, 0),
             (
                 (size[0] + GRID_START_X + 3) * RM_PX,
-                (size[1] + GRID_START_Y + 3) * RM_PX
+                (size[1] + GRID_START_Y + 3) * RM_PX,
             ),
             stroke="none",
             stroke_width=0,
@@ -223,15 +226,21 @@ def add_bar(
     dwg, start=(0, 0), stop=(1, 1), stroke_width=0.15, stroke="black", power=0
 ):
     if power == 1:
-        add_line(dwg, start, stop, "red", 2*stroke_width*RM_PX)
-    add_line(dwg, start, stop, stroke, stroke_width*RM_PX)
+        add_line(dwg, start, stop, "red", 2 * stroke_width * RM_PX)
+    add_line(dwg, start, stop, stroke, stroke_width * RM_PX)
 
 
 def add_capacitor(
-    dwg, pos=(0, 0), rot=0, capacity=10, state=5, stroke_width=2.0, stroke="black"
+    dwg,
+    pos=(0, 0),
+    rot=0,
+    capacity=10,
+    state=5,
+    stroke_width=2.0,
+    stroke="black",
 ):
     sw = stroke_width
-    case_stroke = svgwrite.rgb(75, 75, 75, '%')
+    case_stroke = svgwrite.rgb(75, 75, 75, "%")
     """           term1
       c3  _______O_______ c2
       c0  _______________ c1
@@ -275,8 +284,8 @@ def add_capacitor(
             fill="red",
         )
     )
-    add_line(dwg, c0, c1, stroke, 0.5*sw)
-    add_line(dwg, c2, c3, stroke, 0.5*sw)
+    add_line(dwg, c0, c1, stroke, 0.5 * sw)
+    add_line(dwg, c2, c3, stroke, 0.5 * sw)
     dwg.add(
         dwg.circle(
             grid_xy(center[0], center[1]),
@@ -286,7 +295,6 @@ def add_capacitor(
             fill="none",
         )
     )
-
 
 
 def add_node(dwg, pos=(0, 0), stroke_width=0.0, stroke="black", power=0):
@@ -344,7 +352,6 @@ def add_curcuit(dwg, circuit, circuit_state):
                 power=circuit_state["nodes"][cap_node_key],
             )
 
-
     for relay_key in cir["relays"]:
         relay = cir["relays"][relay_key]
 
@@ -388,7 +395,7 @@ def add_curcuit(dwg, circuit, circuit_state):
                 start=start,
                 stop=stop,
                 power=circuit_state["bars"][bar_idx],
-                stroke_width=0.1
+                stroke_width=0.1,
             )
 
     for node_key in cir["nodes"]:
@@ -404,7 +411,6 @@ def add_curcuit(dwg, circuit, circuit_state):
                 pos=cir["nodes"][node_key]["pos"],
                 name=cir["nodes"][node_key]["name"],
             )
-
 
 
 def draw_circuit(path, circuit, circuit_state):
