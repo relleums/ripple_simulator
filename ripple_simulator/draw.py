@@ -231,13 +231,7 @@ def add_bar(
 
 
 def add_capacitor(
-    dwg,
-    pos,
-    rot,
-    capacity,
-    state,
-    stroke_width=2.0,
-    stroke="black",
+    dwg, pos, rot, capacity, state, stroke_width=2.0, stroke="black",
 ):
     sw = stroke_width
     case_stroke = svgwrite.rgb(75, 75, 75, "%")
@@ -278,7 +272,7 @@ def add_capacitor(
             0.9 * RM_PX,
             stroke=case_stroke,
             stroke_width=sw,
-            fill=svgwrite.rgb(100.0*fill, 0, 0, "%"),
+            fill=svgwrite.rgb(100.0 * fill, 0, 0, "%"),
         )
     )
 
