@@ -127,14 +127,21 @@ def add_relay(
 
     if state < simulate.STATE_OFF_LT:
         sx = 1
-        coil_fill = "white"
     elif state > simulate.STATE_ON_GT:
         sx = -1
-        coil_fill = "red"
     else:
         num_floating_states = simulate.STATE_ON_GT - simulate.STATE_OFF_LT
         sx = -((state - simulate.STATE_OFF_LT) / num_floating_states) + 0.5
+
+    # coil color
+    # ----------
+    if state == simulate.STATE_FULLY_ON:
+        coil_fill = "red"
+    elif state == simulate.STATE_FULLY_OFF:
+        coil_fill = "white"
+    else:
         coil_fill = "orange"
+
     dwg.add(
         dwg.circle(
             grid_xy(coil_center[0], coil_center[1]),
