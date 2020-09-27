@@ -149,9 +149,9 @@ def make_register(num_bits=8):
 def make_clock(periode):
     cir = build.empty_circuit()
 
-    cir["nodes"]["VCLK"] = {"pos": [0, 36], "name": "VCLK"}
-    cir["nodes"]["v_end"] = {"pos": [6, 36]}
-    cir["bars"].append(("nodes/VCLK", "nodes/v_end"))
+    cir["nodes"]["VCLK"] = {"pos": [0, 37], "name": "VCLK"}
+    cir["nodes"]["vclk1"] = {"pos": [6, 37]}
+    cir["bars"].append(("nodes/VCLK", "nodes/vclk1"))
 
     DY = 5
     for i in range(4):
@@ -177,13 +177,7 @@ def make_clock(periode):
                 ("relays/" + rkey + "/in1", "relays/" + prev_rkey + "/in0")
             )
 
-    cir["bars"].append(("relays/R4/in0", "nodes/v_end"))
-
-    # FRZ
-    cir["nodes"]["FRZ"] = {"pos": [0, 43], "name": "FRZ"}
-
-    cir["relays"]["FRZ_33"] = {"pos": [15, 3], "rot": 0}
-    cir["relays"]["FRZ_12"] = {"pos": [20, 3], "rot": 0}
+    cir["bars"].append(("relays/R4/in0", "nodes/vclk1"))
 
     # CYCLE 32
     cir["relays"]["CYC32"] = {"pos": [16, 35], "rot": 2}
@@ -194,12 +188,11 @@ def make_clock(periode):
     # CYCLE 14
     cir["relays"]["CYC14"] = {"pos": [26, 35], "rot": 2}
 
-    # XOR
-    cir["relays"]["XOR4"] = {"pos": [33, 20], "rot": 3}
-    cir["relays"]["XOR3"] = {"pos": [33, 25], "rot": 3}
-
     cir["nodes"]["CLK"] = {"pos": [51, 40], "name": "CLK"}
 
+
+    # pure clock
+    # ----------
     cir = build.add_trace(
         circuit=cir,
         prefix="w",
@@ -253,7 +246,7 @@ def make_clock(periode):
         prefix="w6",
         start_node="relays/R3/coil0",
         stop_node="relays/CYC14/nop",
-        trace=[[10, 24], [26, 24]],
+        trace=[[10, 24], [13, 24], [26, 24]],
     )
 
     cir = build.add_trace(
@@ -278,6 +271,96 @@ def make_clock(periode):
         start_node="relays/R4/coil0",
         stop_node="relays/CYC32/ncl",
         trace=[[10, 29], [13, 29]],
+    )
+
+    cir["nodes"]["1high"] = {"pos": [11, 35]}
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="w10",
+        start_node="relays/R1/nop",
+        stop_node="nodes/1high",
+        trace=[[12, 13], [12, 35]],
+    )
+
+    # freeze
+    # ------
+
+    cir["nodes"]["FRZ"] = {"pos": [0, 30], "name": "FRZ"}
+
+    cir["relays"]["FRZ_33"] = {"pos": [-4, 23], "rot": 1}
+    cir["relays"]["FRZ_12"] = {"pos": [-4, 18], "rot": 1}
+
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="frz12",
+        start_node="relays/FRZ_12/coil0",
+        stop_node="capacitors/C2",
+        trace=[[0, 17]],
+    )
+
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="frz32",
+        start_node="relays/FRZ_33/coil0",
+        stop_node="capacitors/C3",
+        trace=[[0, 22]],
+    )
+
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="frz_l1",
+        start_node="relays/FRZ_33/nop",
+        stop_node="nodes/FRZ",
+        trace=[[2 ,30]],
+    )
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="frz_l2",
+        start_node="relays/FRZ_12/nop",
+        stop_node="nodes/frz_l1_000",
+        trace=[[2 ,24]],
+    )
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="frz_12_latch",
+        start_node="relays/FRZ_12/coil0",
+        stop_node="relays/FRZ_12/in0",
+        trace=[],
+    )
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="frz_33_latch",
+        start_node="relays/FRZ_33/coil0",
+        stop_node="relays/FRZ_33/in0",
+        trace=[],
+    )
+
+    # xor clock
+    # ---------
+    cir["relays"]["XOR4"] = {"pos": [30, 23], "rot": 1}
+    cir["relays"]["XOR3"] = {"pos": [30, 28], "rot": 1}
+
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="xor3v",
+        start_node="nodes/vclk1",
+        stop_node="relays/XOR3/in0",
+        trace=[[30, 37]],
+    )
+
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="xor1",
+        start_node="relays/XOR3/nop",
+        stop_node="relays/XOR4/ncl",
+        trace=[[36, 28], [36, 20]],
+    )
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="xor2",
+        start_node="relays/XOR3/ncl",
+        stop_node="relays/XOR4/nop",
+        trace=[],
     )
 
     return cir
