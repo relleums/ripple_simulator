@@ -177,6 +177,15 @@ def make_clock(periode):
                 ("relays/" + rkey + "/in1", "relays/" + prev_rkey + "/in0")
             )
 
+        #GND
+        nkey0 = "n{:d}_gnd_0".format(ii)
+        cir["nodes"][nkey0] = {"pos": [10, ii * DY + 6]}
+        cir["bars"].append(("nodes/" + nkey0, "relays/" + rkey + "/coil1"))
+        nkey1 = "n{:d}_gnd_1".format(ii)
+        cir["nodes"][nkey1] = {"pos": [0, ii * DY + 6]}
+        cir["bars"].append(("nodes/" + nkey1, "nodes/" + nkey0))
+
+
     cir["bars"].append(("relays/R4/in0", "nodes/vclk1"))
 
     # CYCLE 32
@@ -187,8 +196,6 @@ def make_clock(periode):
 
     # CYCLE 14
     cir["relays"]["CYC14"] = {"pos": [26, 35], "rot": 2}
-
-    cir["nodes"]["CLK"] = {"pos": [51, 40], "name": "CLK"}
 
 
     # pure clock
@@ -285,81 +292,108 @@ def make_clock(periode):
     # freeze
     # ------
 
-    cir["nodes"]["FRZ"] = {"pos": [0, 30], "name": "FRZ"}
+    cir["nodes"]["FRZ"] = {"pos": [0, 3], "name": "FRZ"}
 
-    cir["relays"]["FRZ_33"] = {"pos": [-4, 23], "rot": 1}
-    cir["relays"]["FRZ_12"] = {"pos": [-4, 18], "rot": 1}
-
-    cir = build.add_trace(
-        circuit=cir,
-        prefix="frz12",
-        start_node="relays/FRZ_12/coil0",
-        stop_node="capacitors/C2",
-        trace=[[0, 17]],
-    )
+    cir["relays"]["FRZ_33"] = {"pos": [18, 3], "rot": 0}
+    cir["relays"]["FRZ_12"] = {"pos": [13, 3], "rot": 0}
 
     cir = build.add_trace(
         circuit=cir,
-        prefix="frz32",
-        start_node="relays/FRZ_33/coil0",
-        stop_node="capacitors/C3",
-        trace=[[0, 22]],
-    )
-
-    cir = build.add_trace(
-        circuit=cir,
-        prefix="frz_l1",
-        start_node="relays/FRZ_33/nop",
-        stop_node="nodes/FRZ",
-        trace=[[2 ,30]],
-    )
-    cir = build.add_trace(
-        circuit=cir,
-        prefix="frz_l2",
-        start_node="relays/FRZ_12/nop",
-        stop_node="nodes/frz_l1_000",
-        trace=[[2 ,24]],
-    )
-    cir = build.add_trace(
-        circuit=cir,
-        prefix="frz_12_latch",
-        start_node="relays/FRZ_12/coil0",
-        stop_node="relays/FRZ_12/in0",
+        prefix="frz0",
+        start_node="nodes/FRZ",
+        stop_node="relays/FRZ_33/nop",
         trace=[],
     )
     cir = build.add_trace(
         circuit=cir,
-        prefix="frz_33_latch",
-        start_node="relays/FRZ_33/coil0",
-        stop_node="relays/FRZ_33/in0",
+        prefix="frz1",
+        start_node="nodes/FRZ",
+        stop_node="relays/FRZ_12/nop",
         trace=[],
+    )
+
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="frz_4",
+        start_node="relays/R1/nop",
+        stop_node="relays/FRZ_12/coil0",
+        trace=[[14, 7]],
+    )
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="frz2",
+        start_node="relays/R1/coil0",
+        stop_node="relays/FRZ_12/in1",
+        trace=[[17, 3]],
+    )
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="frz3",
+        start_node="relays/R3/nop",
+        stop_node="relays/FRZ_33/coil0",
+        trace=[[19, 7]],
+    )
+
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="frz3_latch",
+        start_node="relays/R3/coil0",
+        stop_node="relays/FRZ_33/in1",
+        trace=[[22, 3]],
     )
 
     # xor clock
     # ---------
-    cir["relays"]["XOR4"] = {"pos": [30, 23], "rot": 1}
-    cir["relays"]["XOR3"] = {"pos": [30, 28], "rot": 1}
+    cir["nodes"]["CLK"] = {"pos": [51, 40], "name": "CLK"}
+
+    cir["relays"]["XOR4"] = {"pos": [36, 28], "rot": 3}
+    cir["relays"]["XOR3"] = {"pos": [36, 23], "rot": 3}
 
     cir = build.add_trace(
         circuit=cir,
-        prefix="xor3v",
-        start_node="nodes/vclk1",
-        stop_node="relays/XOR3/in0",
-        trace=[[30, 37]],
+        prefix="clk_out",
+        start_node="nodes/CLK",
+        stop_node="relays/XOR4/in1",
+        trace=[],
     )
 
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="xor_vclk",
+        start_node="nodes/vclk1",
+        stop_node="relays/XOR3/in1",
+        trace=[],
+    )
+
+    # xor itself
     cir = build.add_trace(
         circuit=cir,
         prefix="xor1",
         start_node="relays/XOR3/nop",
         stop_node="relays/XOR4/ncl",
-        trace=[[36, 28], [36, 20]],
+        trace=[],
     )
     cir = build.add_trace(
         circuit=cir,
         prefix="xor2",
         start_node="relays/XOR3/ncl",
         stop_node="relays/XOR4/nop",
+        trace=[],
+    )
+
+    # xor inputs
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="xor_in3",
+        start_node="relays/XOR3/coil0",
+        stop_node="relays/R3/nop",
+        trace=[],
+    )
+    cir = build.add_trace(
+        circuit=cir,
+        prefix="xor_in4",
+        start_node="relays/XOR4/coil0",
+        stop_node="relays/R4/nop",
         trace=[],
     )
 
