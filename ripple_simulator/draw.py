@@ -283,8 +283,13 @@ def add_capacitor(
         )
     )
 
+def add_node_name(dwg, pos, name):
+    rndx = np.random.uniform() - .5
+    rndy = np.random.uniform() - .5
+    dwg.add(dwg.text(name, grid_xy(pos[0] + rndx, pos[1] + rndy)))
 
-def add_node(dwg, pos=(0, 0), stroke_width=0.0, stroke="black", power=0):
+
+def add_node(dwg, pos=(0, 0), name=None, stroke_width=0.0, stroke="black", power=0):
     node_radius = 0.3 * RM_PX
     if power == 1:
         dwg.add(
@@ -305,6 +310,8 @@ def add_node(dwg, pos=(0, 0), stroke_width=0.0, stroke="black", power=0):
             fill=stroke,
         )
     )
+    if name:
+        dwg.add(dwg.text(name, grid_xy(pos[0], pos[1])))
 
 
 def add_label_node(dwg, pos, name, stroke_width=2.0, stroke="black"):
@@ -337,6 +344,7 @@ def add_curcuit(dwg, circuit, circuit_state):
                 dwg=dwg,
                 pos=cir["nodes"][cap_node_key]["pos"],
                 power=circuit_state["nodes"][cap_node_key],
+                name=cap_node_key,
             )
 
     for relay_key in cir["relays"]:
@@ -362,6 +370,7 @@ def add_curcuit(dwg, circuit, circuit_state):
                     dwg=dwg,
                     pos=cir["nodes"][node_key]["pos"],
                     power=circuit_state["nodes"][node_key],
+                    name=node_key,
                 )
 
     for bar_idx, bar in enumerate(cir["bars"]):
@@ -391,6 +400,13 @@ def add_curcuit(dwg, circuit, circuit_state):
                 dwg=dwg,
                 pos=cir["nodes"][node_key]["pos"],
                 power=circuit_state["nodes"][node_key],
+                name=node_key
+            )
+        else:
+            add_node_name(
+                dwg=dwg,
+                pos=cir["nodes"][node_key]["pos"],
+                name=node_key,
             )
         if "name" in cir["nodes"][node_key]:
             add_label_node(
