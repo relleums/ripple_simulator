@@ -199,11 +199,6 @@ def make_clock(periode):
     # CYCLE 14
     cir["relays"]["CYC14"] = {"pos": [26, 35], "rot": 2}
 
-    # freeze
-    cir["nodes"]["FRZ"] = {"pos": [0, 3], "name": "FRZ"}
-    cir["relays"]["FRZ_33"] = {"pos": [18, 3], "rot": 0}
-    cir["relays"]["FRZ_12"] = {"pos": [13, 3], "rot": 0}
-
     # pure clock
     # ----------
     cir = build.add_trace(
@@ -220,14 +215,6 @@ def make_clock(periode):
         start_node="relays/R1/coil0",
         stop_node="relays/CYC32/nop",
         trace=[[10, 14], [16, 14],],
-    )
-
-    cir = build.add_trace(
-        circuit=cir,
-        prefix="wa2",
-        start_node="nodes/wa_001",
-        stop_node="relays/FRZ_12/in1",
-        trace=[[17, 14], [17, 3]],
     )
 
     cir = build.add_trace(
@@ -305,8 +292,10 @@ def make_clock(periode):
 
     # freeze
     # ------
-
-
+    """
+    cir["nodes"]["FRZ"] = {"pos": [0, 3], "name": "FRZ"}
+    cir["relays"]["FRZ_33"] = {"pos": [18, 3], "rot": 0}
+    cir["relays"]["FRZ_12"] = {"pos": [13, 3], "rot": 0}
 
     cir = build.add_trace(
         circuit=cir,
@@ -330,15 +319,23 @@ def make_clock(periode):
         stop_node="relays/FRZ_12/coil0",
         trace=[[14, 7]],
     )
-    """
+
     cir = build.add_trace(
         circuit=cir,
-        prefix="frz2",
-        start_node="relays/R1/coil0",
+        prefix="wa2",
+        start_node="nodes/wa_001",
         stop_node="relays/FRZ_12/in1",
-        trace=[[17, 3]],
+        trace=[[17, 14], [17, 3]],
     )
-    """
+
+    # cir = build.add_trace(
+    #     circuit=cir,
+    #     prefix="frz2",
+    #     start_node="relays/R1/coil0",
+    #     stop_node="relays/FRZ_12/in1",
+    #     trace=[[17, 3]],
+    # )
+
     cir = build.add_trace(
         circuit=cir,
         prefix="frz3",
@@ -354,9 +351,11 @@ def make_clock(periode):
         stop_node="relays/FRZ_33/in1",
         trace=[],
     )
+    """
 
     # xor clock
     # ---------
+    """
     cir["nodes"]["CLK"] = {"pos": [42, 40], "name": "CLK"}
 
     cir["relays"]["XOR4"] = {"pos": [36, 28], "rot": 3}
@@ -409,5 +408,6 @@ def make_clock(periode):
         stop_node="relays/R4/nop",
         trace=[],
     )
+    """
 
     return cir
