@@ -370,7 +370,7 @@ def add_curcuit(dwg, circuit, circuit_state):
                     dwg=dwg,
                     pos=cir["nodes"][node_key]["pos"],
                     power=circuit_state["nodes"][node_key],
-                    name=node_key,
+                    name=None,
                 )
 
     for bar_idx, bar in enumerate(cir["bars"]):
@@ -400,14 +400,16 @@ def add_curcuit(dwg, circuit, circuit_state):
                 dwg=dwg,
                 pos=cir["nodes"][node_key]["pos"],
                 power=circuit_state["nodes"][node_key],
-                name=node_key
+                name=None
             )
+        """
         else:
             add_node_name(
                 dwg=dwg,
                 pos=cir["nodes"][node_key]["pos"],
                 name=node_key,
             )
+        """
         if "name" in cir["nodes"][node_key]:
             add_label_node(
                 dwg=dwg,
@@ -418,5 +420,7 @@ def add_curcuit(dwg, circuit, circuit_state):
 
 def draw_circuit(path, circuit, circuit_state):
     dwg = svgwrite.Drawing(path, profile="tiny")
+    dwg.attribs["width"] = '1920px'
+    dwg.attribs["height"] = '1400px'
     add_curcuit(dwg=dwg, circuit=circuit, circuit_state=circuit_state)
     dwg.save()
