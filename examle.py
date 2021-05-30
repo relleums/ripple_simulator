@@ -1,24 +1,19 @@
 import ripple_simulator as ris
 import os
+import subprocess
 
 import numpy as np
 import json
 
-my_circuit = {
-    "relays": {"bit": {"pos": [10, 10], "rot": 0}},
-    "capacitors": {},
-    "nodes": {},
-    "bars": [("relays/bit/coil", "relays/bit/in"),],
-}
 
-reg = ris.harry_porter_computer.make_register()
+#reg = ris.harry_porter_computer.make_register()
 clk0 = ris.harry_porter_computer.make_clock(periode=25)
 
 clk2 = ris.build.add_group_name(circuit=clk0, name="CLOCK")
 clk = ris.build.translate(circuit=clk2, pos=[0, 0])
 
-reg_B = ris.build.add_group_name(circuit=reg, name="REGISTER-B")
-reg_B = ris.build.translate(circuit=reg_B, pos=[0, 0])
+#reg_B = ris.build.add_group_name(circuit=reg, name="REGISTER-B")
+#reg_B = ris.build.translate(circuit=reg_B, pos=[0, 0])
 
 cir = ris.build.merge_circuits([clk])
 cir["nodes"]["V"] = {"pos": [0, 0], "name": "V"}
@@ -51,7 +46,7 @@ clock_pegels = []
 
 # run ripple simulation
 # ---------------------
-for step in range(1):
+for step in range(160):
     relays, capacitors, meshes_on_power = ris.simulate.one_step(
         relays=relays,
         capacitors=capacitors,
@@ -71,8 +66,14 @@ for step in range(1):
         circuit=circuit,
         circuit_state=circuit_state,
     )
+    subprocess.call([
+        "convert",
+        "test_{:06d}.svg".format(step),
+        "test_{:06d}.jpg".format(step),
+    ])
+    subprocess.call(["rm", "test_{:06d}.svg".format(step)])
 
     # print(step, circuit_state["relays"]["REGISTER-B_select"])
-    print(step, circuit_state["nodes"]["nodes/CLOCK_CLK"])
+    #print(step, circuit_state["nodes"]["nodes/CLOCK_CLK"])
     steps.append(step)
-    clock_pegels.append(circuit_state["nodes"]["nodes/CLOCK_CLK"])
+    #clock_pegels.append(circuit_state["nodes"]["nodes/CLOCK_CLK"])
