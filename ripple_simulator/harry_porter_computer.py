@@ -146,6 +146,80 @@ def make_register(num_bits=8):
     return cir
 
 
+
+def make_clock_2(periode):
+    cir = build.empty_circuit()
+
+    cir["nodes"]["VCLK"] = {"pos": [0, 37], "name": "VCLK"}
+    cir["nodes"]["Vtick_1"] = {"pos": [6, 37]}
+    cir["bars"].append(("nodes/VCLK", "nodes/Vtick_1"))
+
+    dy = 5
+    dx = 12
+    cx = 10
+    cy = 16
+    for rx in range(4):
+        for ry in range(4):
+            rname = "R{:d}{:d}".format(rx+1, ry+1)
+            cir["relays"][rname] = {"pos": [cx + rx*dx, cy + ry*dy], "rot": 1}
+
+            nkey = "ncoil{:d}{:d}".format(rx+1, ry+1)
+            cir["nodes"][nkey] = {"pos": [cx + rx*dx + 2, cy + ry*dy]}
+
+        ckey = "C{:d}".format(rx+1)
+        cir["capacitors"][ckey] = {
+            "pos": [cx + rx*dx + 2, cy - 8],
+            "rot": 1,
+            "capacity": periode,
+        }
+
+    cir["bars"].append(("relays/R11/coil0", "nodes/ncoil11"))
+    cir["bars"].append(("relays/R12/coil0", "nodes/ncoil12"))
+    cir["bars"].append(("relays/R13/coil0", "nodes/ncoil13"))
+    cir["bars"].append(("relays/R14/coil0", "nodes/ncoil14"))
+
+    cir["bars"].append(("nodes/ncoil11", "nodes/ncoil12"))
+    cir["bars"].append(("nodes/ncoil12", "nodes/ncoil13"))
+    cir["bars"].append(("nodes/ncoil13", "nodes/ncoil14"))
+    cir["bars"].append(("nodes/ncoil11", "capacitors/C1"))
+
+
+    cir["bars"].append(("relays/R21/coil0", "nodes/ncoil21"))
+    cir["bars"].append(("relays/R22/coil0", "nodes/ncoil22"))
+    cir["bars"].append(("relays/R23/coil0", "nodes/ncoil23"))
+    cir["bars"].append(("relays/R24/coil0", "nodes/ncoil24"))
+
+    cir["bars"].append(("nodes/ncoil21", "nodes/ncoil22"))
+    cir["bars"].append(("nodes/ncoil22", "nodes/ncoil23"))
+    cir["bars"].append(("nodes/ncoil23", "nodes/ncoil24"))
+    cir["bars"].append(("nodes/ncoil21", "capacitors/C2"))
+
+
+    cir["bars"].append(("relays/R31/coil0", "nodes/ncoil31"))
+    cir["bars"].append(("relays/R32/coil0", "nodes/ncoil32"))
+    cir["bars"].append(("relays/R33/coil0", "nodes/ncoil33"))
+    cir["bars"].append(("relays/R34/coil0", "nodes/ncoil34"))
+
+    cir["bars"].append(("nodes/ncoil31", "nodes/ncoil32"))
+    cir["bars"].append(("nodes/ncoil32", "nodes/ncoil33"))
+    cir["bars"].append(("nodes/ncoil33", "nodes/ncoil34"))
+    cir["bars"].append(("nodes/ncoil31", "capacitors/C3"))
+
+
+    cir["bars"].append(("relays/R41/coil0", "nodes/ncoil41"))
+    cir["bars"].append(("relays/R42/coil0", "nodes/ncoil42"))
+    cir["bars"].append(("relays/R43/coil0", "nodes/ncoil43"))
+    cir["bars"].append(("relays/R44/coil0", "nodes/ncoil44"))
+
+    cir["bars"].append(("nodes/ncoil41", "nodes/ncoil42"))
+    cir["bars"].append(("nodes/ncoil42", "nodes/ncoil43"))
+    cir["bars"].append(("nodes/ncoil43", "nodes/ncoil44"))
+    cir["bars"].append(["nodes/ncoil41", "capacitors/C4"])
+
+
+    return cir
+
+
 def make_clock(periode):
     cir = build.empty_circuit()
 
