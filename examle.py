@@ -8,24 +8,13 @@ import json
 name = "clock"
 
 if name == "clock":
-    clk0 = ris.harry_porter_computer.make_clock(periode=25)
+    cir_clk = ris.harry_porter_computer.make_clock_2(periode=167)
+    cir_clk = ris.build.add_group_name(circuit=cir_clk, name="CLOCK")
+    cir_clk = ris.build.translate(circuit=cir_clk, pos=[0, 0])
 
-    clk2 = ris.build.add_group_name(circuit=clk0, name="CLOCK")
-    clk = ris.build.translate(circuit=clk2, pos=[0, 0])
-
-    cir = ris.build.merge_circuits([clk])
-    cir["nodes"]["V"] = {"pos": [0, 0], "name": "V"}
-
-    # connect all Vs
-    for node_key in cir["nodes"]:
-        if node_key.endswith("_V"):
-            print(node_key)
-            cir["bars"].append(("nodes/V", "nodes/" + node_key, "transparent"))
-    cir["bars"].append(("nodes/V", "nodes/CLOCK_VCLK", "transparent"))
-
-    circuit = ris.compile(circuit=cir)
+    circuit = ris.compile(circuit=cir_clk)
     meshes, relays, capacitors = ris.compile_relay_meshes(circuit=circuit)
-    seed_mesh_idx = 0
+    seed_mesh_idx = 4
 
 elif name == "register":
     reg = ris.harry_porter_computer.make_register()
@@ -98,11 +87,17 @@ elif name == "half_adder":
     seed_mesh_idx = 0
 
 steps = []
-clock_pegels = []
+CLOCK_pegels = []
+A_pegels = []
+B_pegels = []
+C_pegels = []
+D_pegels = []
+
+DRAW = True
 
 # run ripple simulation
 # ---------------------
-for step in range(1):
+for step in range(10):
     relays, capacitors, meshes_on_power = ris.simulate.one_step(
         relays=relays,
         capacitors=capacitors,
@@ -117,19 +112,43 @@ for step in range(1):
         meshes_on_power=meshes_on_power,
     )
 
-    ris.draw.draw_circuit(
-        path="test_{:06d}.svg".format(step),
-        circuit=circuit,
-        circuit_state=circuit_state,
-    )
-    subprocess.call([
-        "convert",
-        "test_{:06d}.svg".format(step),
-        "test_{:06d}.jpg".format(step),
-    ])
-    subprocess.call(["rm", "test_{:06d}.svg".format(step)])
+    if DRAW:
+        if not os.path.exists("test_{:06d}.jpg".format(step)):
+            ris.draw.draw_circuit(
+                path="test_{:06d}.svg".format(step),
+                circuit=circuit,
+                circuit_state=circuit_state,
+            )
+            subprocess.call([
+                "convert",
+                "test_{:06d}.svg".format(step),
+                "test_{:06d}.jpg".format(step),
+            ])
+            subprocess.call(["rm", "test_{:06d}.svg".format(step)])
 
-    # print(step, circuit_state["relays"]["REGISTER-B_select"])
-    #print(step, circuit_state["nodes"]["nodes/CLOCK_CLK"])
+
+    print(
+        step,
+        circuit_state["nodes"]["nodes/CLOCK_CLOCK"],
+        circuit_state["nodes"]["nodes/CLOCK_A"],
+        circuit_state["nodes"]["nodes/CLOCK_B"],
+        circuit_state["nodes"]["nodes/CLOCK_C"],
+        circuit_state["nodes"]["nodes/CLOCK_D"],
+        )
     steps.append(step)
+
+    CLOCK_pegels.append(circuit_state["nodes"]["nodes/CLOCK_CLOCK"])
+    A_pegels.append(circuit_state["nodes"]["nodes/CLOCK_A"])
+    B_pegels.append(circuit_state["nodes"]["nodes/CLOCK_B"])
+    C_pegels.append(circuit_state["nodes"]["nodes/CLOCK_C"])
+    D_pegels.append(circuit_state["nodes"]["nodes/CLOCK_D"])
+
     #clock_pegels.append(circuit_state["nodes"]["nodes/CLOCK_CLK"])
+
+"""
+plt.plot(steps, CLOCK_pegels, "k")
+plt.plot(steps, np.array(A_pegels) - 2, "red")
+plt.plot(steps, np.array(B_pegels) - 4, "blue")
+plt.plot(steps, np.array(C_pegels) - 6, "green")
+plt.plot(steps, np.array(D_pegels) - 8, "orange")
+"""
