@@ -33,27 +33,27 @@ elif name == "gate":
     dx = 12
     cir_and = ris.logic.gate_and(labels=True)
     cir_and = ris.build.add_group_name(circuit=cir_and, name="AND")
-    cir_and = ris.build.translate(circuit=cir_and, pos=[5+0*dx, 10])
+    cir_and = ris.build.translate(circuit=cir_and, pos=[5 + 0 * dx, 10])
 
     cir_or = ris.logic.gate_or(labels=True)
     cir_or = ris.build.add_group_name(circuit=cir_or, name="OR")
-    cir_or = ris.build.translate(circuit=cir_or, pos=[5+1*dx, 10])
+    cir_or = ris.build.translate(circuit=cir_or, pos=[5 + 1 * dx, 10])
 
     cir_xor = ris.logic.gate_xor(labels=True)
     cir_xor = ris.build.add_group_name(circuit=cir_xor, name="XOR")
-    cir_xor = ris.build.translate(circuit=cir_xor, pos=[5+2*dx, 10])
+    cir_xor = ris.build.translate(circuit=cir_xor, pos=[5 + 2 * dx, 10])
 
     cir_not = ris.logic.gate_not(labels=True)
     cir_not = ris.build.add_group_name(circuit=cir_not, name="NOT")
-    cir_not = ris.build.translate(circuit=cir_not, pos=[5+3*dx, 10])
+    cir_not = ris.build.translate(circuit=cir_not, pos=[5 + 3 * dx, 10])
 
     cir_uni = ris.logic.gate_unity(labels=True)
     cir_uni = ris.build.add_group_name(circuit=cir_uni, name="UNITY")
-    cir_uni = ris.build.translate(circuit=cir_uni, pos=[5+4*dx, 10])
+    cir_uni = ris.build.translate(circuit=cir_uni, pos=[5 + 4 * dx, 10])
 
-    cir = ris.build.merge_circuits([
-        cir_and, cir_or, cir_xor, cir_not, cir_uni
-    ])
+    cir = ris.build.merge_circuits(
+        [cir_and, cir_or, cir_xor, cir_not, cir_uni]
+    )
 
     cir = ris.logic.connect_vin_and_gnd_of_gates(cir, "AND", "OR")
     cir = ris.logic.connect_vin_and_gnd_of_gates(cir, "OR", "XOR")
@@ -119,13 +119,14 @@ for step in range(10):
                 circuit=circuit,
                 circuit_state=circuit_state,
             )
-            subprocess.call([
-                "convert",
-                "test_{:06d}.svg".format(step),
-                "test_{:06d}.jpg".format(step),
-            ])
+            subprocess.call(
+                [
+                    "convert",
+                    "test_{:06d}.svg".format(step),
+                    "test_{:06d}.jpg".format(step),
+                ]
+            )
             subprocess.call(["rm", "test_{:06d}.svg".format(step)])
-
 
     print(
         step,
@@ -134,7 +135,7 @@ for step in range(10):
         circuit_state["nodes"]["nodes/CLOCK_B"],
         circuit_state["nodes"]["nodes/CLOCK_C"],
         circuit_state["nodes"]["nodes/CLOCK_D"],
-        )
+    )
     steps.append(step)
 
     CLOCK_pegels.append(circuit_state["nodes"]["nodes/CLOCK_CLOCK"])
@@ -143,7 +144,7 @@ for step in range(10):
     C_pegels.append(circuit_state["nodes"]["nodes/CLOCK_C"])
     D_pegels.append(circuit_state["nodes"]["nodes/CLOCK_D"])
 
-    #clock_pegels.append(circuit_state["nodes"]["nodes/CLOCK_CLK"])
+    # clock_pegels.append(circuit_state["nodes"]["nodes/CLOCK_CLK"])
 
 """
 plt.plot(steps, CLOCK_pegels, "k")

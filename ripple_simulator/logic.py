@@ -96,7 +96,6 @@ def _add_vin_bar_b(cir, b_in0=False, b_in1=False):
     return cir
 
 
-
 def _add_out_node(cir):
     cir["nodes"]["out"] = {"pos": [0, 5]}
     return cir
@@ -224,14 +223,15 @@ def gate_unity(labels=False):
 
 
 def connect_vin_and_gnd_of_gates(cir, gate_name_a, gate_name_b):
-    cir["bars"].append((
-        "nodes/" + gate_name_a + "_out_V",
-        "nodes/" + gate_name_b + "_in_V"
-    ))
-    cir["bars"].append((
-        "nodes/" + gate_name_a + "_out_GND",
-        "nodes/" + gate_name_b + "_in_GND"
-    ))
+    cir["bars"].append(
+        ("nodes/" + gate_name_a + "_out_V", "nodes/" + gate_name_b + "_in_V")
+    )
+    cir["bars"].append(
+        (
+            "nodes/" + gate_name_a + "_out_GND",
+            "nodes/" + gate_name_b + "_in_GND",
+        )
+    )
     return cir
 
 
@@ -245,7 +245,7 @@ def half_adder(labels=False):
     cir_xor = build.translate(circuit=cir_xor, pos=[0, 7])
 
     cir = build.merge_circuits([cir_xor, cir_and])
-    #cir = connect_vin_and_gnd_of_gates(cir, "XOR", "AND")
+    # cir = connect_vin_and_gnd_of_gates(cir, "XOR", "AND")
 
     cir["bars"].append(("nodes/XOR_b", "nodes/AND_b", "wire-y"))
     cir["bars"].append(("nodes/XOR_c", "nodes/AND_c", "wire-y"))
@@ -334,7 +334,6 @@ def ripple_carry_adder(num_bits=3, labels=True):
         fas.append(cfa)
     cir = build.merge_circuits(fas)
 
-
     # V and GND
     for bit in range(num_bits - 1):
         cir = connect_vin_and_gnd_of_gates(
@@ -361,16 +360,18 @@ def ripple_carry_adder(num_bits=3, labels=True):
 
     # carry
     for bit in range(num_bits - 1):
-        cir["bars"].append((
-            "nodes/FA{:02d}_Cin".format(bit + 1),
-            "nodes/FA{:02d}_Cout".format(bit),
-        ))
+        cir["bars"].append(
+            (
+                "nodes/FA{:02d}_Cin".format(bit + 1),
+                "nodes/FA{:02d}_Cout".format(bit),
+            )
+        )
 
     if labels:
         for bit in range(num_bits):
             nn = "{:02d}".format(bit)
-            cir["nodes"]["FA"+nn+"_A"]["name"] = "A"+nn
-            cir["nodes"]["FA"+nn+"_B"]["name"] = "B"+nn
-            cir["nodes"]["FA"+nn+"_Sum"]["name"] = "Sum"+nn
+            cir["nodes"]["FA" + nn + "_A"]["name"] = "A" + nn
+            cir["nodes"]["FA" + nn + "_B"]["name"] = "B" + nn
+            cir["nodes"]["FA" + nn + "_Sum"]["name"] = "Sum" + nn
 
     return cir

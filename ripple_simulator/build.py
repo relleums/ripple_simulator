@@ -5,13 +5,12 @@ def trace(cir, start_node, trace_nodes, stop_node):
     for i in range(len(trace_nodes)):
         cir["nodes"][trace_nodes[i][0]] = {"pos": trace_nodes[i][1]}
 
-    cir["bars"].append((start_node, "nodes/"+trace_nodes[0][0]))
+    cir["bars"].append((start_node, "nodes/" + trace_nodes[0][0]))
     for i in range(len(trace_nodes) - 1):
-        cir["bars"].append((
-            "nodes/"+trace_nodes[i][0],
-            "nodes/"+trace_nodes[i + 1][0],
-        ))
-    cir["bars"].append(("nodes/"+trace_nodes[-1][0], stop_node))
+        cir["bars"].append(
+            ("nodes/" + trace_nodes[i][0], "nodes/" + trace_nodes[i + 1][0],)
+        )
+    cir["bars"].append(("nodes/" + trace_nodes[-1][0], stop_node))
     return cir
 
 
@@ -27,14 +26,18 @@ def bar_x(cir, pos, length, name, label=False):
         posx = px + i + 1
         cir["nodes"][name + "{:02d}".format(posx)] = {"pos": [px + i + 1, py]}
 
-    cir["bars"].append(("nodes/"+name, "nodes/"+name+"{:02d}".format(px + 1)))
+    cir["bars"].append(
+        ("nodes/" + name, "nodes/" + name + "{:02d}".format(px + 1))
+    )
 
     for i in range(length - 1):
         posx = px + i + 1
-        cir["bars"].append((
-            "nodes/"+name+"{:02d}".format(posx),
-            "nodes/"+name+"{:02d}".format(posx + 1)
-        ))
+        cir["bars"].append(
+            (
+                "nodes/" + name + "{:02d}".format(posx),
+                "nodes/" + name + "{:02d}".format(posx + 1),
+            )
+        )
 
     return cir
 

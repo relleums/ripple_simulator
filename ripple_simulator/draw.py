@@ -213,11 +213,11 @@ def add_grid(
         add_line(dwg, (xl, 0), (xl, size[1]), stroke, xw)
 
         if xl % 5 == 0:
-            dwg.add(dwg.text(
-                "{:>3d}".format(xl),
-                grid_xy(xl - 0.5, -2),
-                font_size=30
-            ))
+            dwg.add(
+                dwg.text(
+                    "{:>3d}".format(xl), grid_xy(xl - 0.5, -2), font_size=30
+                )
+            )
     dwg.add(dwg.text("X", grid_xy(size[0] + 1, -1), font_size=30))
 
     for yl in range(size[1] + 1):
@@ -229,11 +229,11 @@ def add_grid(
         add_line(dwg, (0, yl), (size[0], yl), stroke, yw)
 
         if yl % 5 == 0:
-            dwg.add(dwg.text(
-                "{:>3d}".format(yl),
-                grid_xy(-3, (yl - 0.5)),
-                font_size=30
-            ))
+            dwg.add(
+                dwg.text(
+                    "{:>3d}".format(yl), grid_xy(-3, (yl - 0.5)), font_size=30
+                )
+            )
     dwg.add(dwg.text("Y", grid_xy(-1, size[1] + 1), font_size=30))
 
 
@@ -291,13 +291,16 @@ def add_capacitor(
         )
     )
 
+
 def add_node_name(dwg, pos, name):
-    rndx = np.random.uniform() - .5
-    rndy = np.random.uniform() - .5
+    rndx = np.random.uniform() - 0.5
+    rndy = np.random.uniform() - 0.5
     dwg.add(dwg.text(name, grid_xy(pos[0] + rndx, pos[1] + rndy)))
 
 
-def add_node(dwg, pos=(0, 0), name=None, stroke_width=0.0, stroke="black", power=0):
+def add_node(
+    dwg, pos=(0, 0), name=None, stroke_width=0.0, stroke="black", power=0
+):
     node_radius = 0.2 * RM_PX
     if power == 1:
         dwg.add(
@@ -431,7 +434,7 @@ def add_curcuit(dwg, circuit, circuit_state):
                 dwg=dwg,
                 pos=cir["nodes"][node_key]["pos"],
                 power=circuit_state["nodes"][node_key],
-                name=None
+                name=None,
             )
         """
         else:
@@ -451,7 +454,7 @@ def add_curcuit(dwg, circuit, circuit_state):
 
 def draw_circuit(path, circuit, circuit_state):
     dwg = svgwrite.Drawing(path, profile="tiny")
-    dwg.attribs["width"] = '1920px'
-    dwg.attribs["height"] = '1400px'
+    dwg.attribs["width"] = "1920px"
+    dwg.attribs["height"] = "1400px"
     add_curcuit(dwg=dwg, circuit=circuit, circuit_state=circuit_state)
     dwg.save()
