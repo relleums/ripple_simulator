@@ -290,7 +290,7 @@ def add_node_name(dwg, pos, name):
 
 
 def add_node(dwg, pos=(0, 0), name=None, stroke_width=0.0, stroke="black", power=0):
-    node_radius = 0.3 * RM_PX
+    node_radius = 0.2 * RM_PX
     if power == 1:
         dwg.add(
             dwg.circle(
@@ -385,6 +385,29 @@ def add_curcuit(dwg, circuit, circuit_state):
             )
         elif bar[2] == "transparent":
             pass
+        elif bar[2] == "wire-y":
+            yoff = -0.3
+            add_bar(
+                dwg=dwg,
+                start=start,
+                stop=(start[0], start[1] + yoff),
+                power=circuit_state["bars"][bar_idx],
+                stroke_width=0.1,
+            )
+            add_bar(
+                dwg=dwg,
+                start=(start[0], start[1] + yoff),
+                stop=(stop[0], stop[1] + yoff),
+                power=circuit_state["bars"][bar_idx],
+                stroke_width=0.1,
+            )
+            add_bar(
+                dwg=dwg,
+                start=stop,
+                stop=(stop[0], stop[1] + yoff),
+                power=circuit_state["bars"][bar_idx],
+                stroke_width=0.1,
+            )
         else:
             add_bar(
                 dwg=dwg,
