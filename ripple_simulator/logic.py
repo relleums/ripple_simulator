@@ -154,14 +154,15 @@ def gate_or(labels=False):
     return cir
 
 
-def gate_xor(labels=False):
+def gate_xor(labels=False, vin=True, gnd=True):
     cir = build.empty_circuit()
     cir = _add_gate_relays(cir=cir)
     cir = _add_b_c_inputs(cir=cir)
-    cir = _add_gnd_bar(cir=cir)
     cir = _add_out_node(cir=cir)
-    cir = _add_vin_bar_b_c(cir=cir, b_in0=True)
-
+    if vin:
+        cir = _add_vin_bar_b_c(cir=cir, b_in0=True)
+    if gnd:
+        cir = _add_gnd_bar(cir=cir)
     # inner
     cir["bars"].append(("relays/b/nop", "relays/c/ncl", "wire-y"))
     cir["bars"].append(("relays/b/ncl", "relays/c/nop"))
