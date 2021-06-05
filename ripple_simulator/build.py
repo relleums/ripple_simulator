@@ -1,4 +1,4 @@
-def add_trace(cir, start_node, trace_nodes, stop_node):
+def trace(cir, start_node, trace_nodes, stop_node):
     if len(trace_nodes) == 0:
         cir["bars"].append((start_node, stop_node))
         return cir
@@ -15,7 +15,7 @@ def add_trace(cir, start_node, trace_nodes, stop_node):
     return cir
 
 
-def bar_in_x(cir, pos, length, name, label=False):
+def bar_x(cir, pos, length, name, label=False):
     assert length > 0
     px = pos[0]
     py = pos[1]

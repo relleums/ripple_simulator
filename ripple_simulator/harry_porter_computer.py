@@ -118,7 +118,7 @@ def make_register(num_bits=8):
     cir["bars"].append(("nodes/LOAD", "nodes/load_1"))
     cir["bars"].append(("nodes/load_1", "nodes/load_0"))
     cir["bars"].append(("relays/select/coil0", "nodes/load_0"))
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         start_node="relays/load_not/coil0",
         stop_node="nodes/load_1",
@@ -126,7 +126,7 @@ def make_register(num_bits=8):
     )
 
     # load-not GNG
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         start_node="relays/load_not/coil1",
         stop_node="nodes/gnd_bit_{:d}".format(num_bits - 1),
@@ -134,7 +134,7 @@ def make_register(num_bits=8):
     )
 
     # load-not GNG
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         start_node="relays/load/ncl",
         stop_node="relays/enable_{:d}/coil0".format(num_bits - 1),
@@ -147,16 +147,16 @@ def make_register(num_bits=8):
 def make_clock(periode):
     cir = build.empty_circuit()
 
-    cir = build.bar_in_x(cir=cir, pos=[1, 1], length=60, name="A", label=True)
-    cir = build.bar_in_x(cir=cir, pos=[1, 5], length=60, name="B", label=True)
-    cir = build.bar_in_x(cir=cir, pos=[1, 9], length=60, name="C", label=True)
-    cir = build.bar_in_x(cir=cir, pos=[1, 13], length=60, name="D", label=True)
+    cir = build.bar_x(cir=cir, pos=[1, 1], length=60, name="A", label=True)
+    cir = build.bar_x(cir=cir, pos=[1, 5], length=60, name="B", label=True)
+    cir = build.bar_x(cir=cir, pos=[1, 9], length=60, name="C", label=True)
+    cir = build.bar_x(cir=cir, pos=[1, 13], length=60, name="D", label=True)
 
-    cir = build.bar_in_x(cir=cir, pos=[1, 36], length=60, name="V", label=True)
-    cir = build.bar_in_x(cir=cir, pos=[1, 38], length=60, name="GND", label=True)
+    cir = build.bar_x(cir=cir, pos=[1, 36], length=60, name="V", label=True)
+    cir = build.bar_x(cir=cir, pos=[1, 38], length=60, name="GND", label=True)
 
-    cir = build.bar_in_x(cir=cir, pos=[1, 34], length=60, name="CLOCK", label=True)
-    cir = build.bar_in_x(cir=cir, pos=[1, 32], length=6, name="FRZ", label=True)
+    cir = build.bar_x(cir=cir, pos=[1, 34], length=60, name="CLOCK", label=True)
+    cir = build.bar_x(cir=cir, pos=[1, 32], length=6, name="FRZ", label=True)
 
     # latch A
     cir["relays"]["latch_A"] = {"pos": [2, 26], "rot": 0}
@@ -170,7 +170,7 @@ def make_clock(periode):
     cir["bars"].append(("relays/latch_C/coil0", "relays/latch_C/in0"))
     cir["bars"].append(("nodes/C07", "relays/latch_C/in0"))
 
-    cir = build.bar_in_x(cir=cir, pos=[5, 29], length=5, name="latch_GND")
+    cir = build.bar_x(cir=cir, pos=[5, 29], length=5, name="latch_GND")
     cir["bars"].append(("nodes/latch_GND", "relays/latch_A/coil1"))
     cir["bars"].append(("nodes/latch_GND10", "relays/latch_C/coil1"))
     cir["bars"].append(("nodes/GND06", "nodes/latch_GND06"))
@@ -179,7 +179,7 @@ def make_clock(periode):
     cir["relays"]["xorc"] = {"pos": [17, 26], "rot": 0}
     cir["relays"]["xord"] = {"pos": [22, 26], "rot": 0}
     cir["bars"].append(("relays/xorc/ncl","relays/xord/nop"))
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         "relays/xorc/nop",
         [
@@ -188,7 +188,7 @@ def make_clock(periode):
         ],
         "relays/xord/ncl"
     )
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         "relays/xorc/in0",
         [
@@ -197,7 +197,7 @@ def make_clock(periode):
         "nodes/CLOCK16"
     )
 
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         "relays/xord/in1",
         [
@@ -206,7 +206,7 @@ def make_clock(periode):
         "nodes/V26"
     )
 
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         "relays/xorc/coil0",
         [
@@ -214,7 +214,7 @@ def make_clock(periode):
         ],
         "nodes/C18"
     )
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         "relays/xord/coil0",
         [
@@ -222,7 +222,7 @@ def make_clock(periode):
         ],
         "nodes/D23"
     )
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         "relays/xorc/coil1",
         [
@@ -232,7 +232,7 @@ def make_clock(periode):
         ],
         "relays/xord/coil1",
     )
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         "nodes/xorgnd1",
         [
@@ -248,7 +248,7 @@ def make_clock(periode):
     cir["relays"]["cycleAD-B"] = {"pos": [35, 31], "rot": 2}
     cir["relays"]["cycleAD-C"] = {"pos": [35, 24], "rot": 2}
 
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         "relays/cycleAD-C/coil1",
         [
@@ -261,7 +261,7 @@ def make_clock(periode):
 
     cir["bars"].append(("nodes/V35", "relays/cycleAD-B/in0"))
 
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         "relays/cycleAD-B/coil0",
         [
@@ -271,7 +271,7 @@ def make_clock(periode):
     )
     cir["bars"].append(("relays/cycleAD-B/ncl", "relays/cycleAD-C/in1"))
 
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         "relays/cycleAD-C/coil0",
         [
@@ -286,7 +286,7 @@ def make_clock(periode):
     # --------------
     cir["relays"]["cycleB-D"] = {"pos": [45, 31], "rot": 2}
     cir["relays"]["cycleB-A"] = {"pos": [45, 24], "rot": 2}
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         "relays/cycleB-A/coil1",
         [
@@ -298,7 +298,7 @@ def make_clock(periode):
     cir["bars"].append(("nodes/cycBgnd1", "nodes/GND41"))
     cir["bars"].append(("nodes/V45", "relays/cycleB-D/in0"))
 
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         "relays/cycleB-D/coil0",
         [
@@ -307,7 +307,7 @@ def make_clock(periode):
         "nodes/D47",
     )
     cir["bars"].append(("relays/cycleB-D/ncl", "relays/cycleB-A/in1"))
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         "relays/cycleB-A/coil0",
         [
@@ -321,7 +321,7 @@ def make_clock(periode):
     # --------------
     cir["relays"]["cycleC-A"] = {"pos": [55, 31], "rot": 2}
     cir["relays"]["cycleC-B"] = {"pos": [55, 24], "rot": 2}
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         "relays/cycleC-B/coil1",
         [
@@ -333,7 +333,7 @@ def make_clock(periode):
     cir["bars"].append(("nodes/cycCgnd1", "nodes/GND51"))
     cir["bars"].append(("nodes/V55", "relays/cycleC-A/in0"))
 
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         "relays/cycleC-A/coil0",
         [
@@ -342,7 +342,7 @@ def make_clock(periode):
         "nodes/A57",
     )
     cir["bars"].append(("relays/cycleC-A/ncl", "relays/cycleC-B/in1"))
-    cir = build.add_trace(
+    cir = build.trace(
         cir,
         "relays/cycleC-B/coil0",
         [
