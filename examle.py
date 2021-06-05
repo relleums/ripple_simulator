@@ -8,7 +8,7 @@ import json
 name = "clock"
 
 if name == "clock":
-    cir_clk = ris.harry_porter_computer.make_clock_2(periode=167)
+    cir_clk = ris.harry_porter_computer.make_clock(periode=167)
     cir_clk = ris.build.add_group_name(circuit=cir_clk, name="CLOCK")
     cir_clk = ris.build.translate(circuit=cir_clk, pos=[0, 0])
 
