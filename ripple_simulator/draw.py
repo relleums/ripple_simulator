@@ -213,8 +213,12 @@ def add_grid(
         add_line(dwg, (xl, 0), (xl, size[1]), stroke, xw)
 
         if xl % 5 == 0:
-            dwg.add(dwg.text("{:>3d}".format(xl), grid_xy(xl - 0.5, -2),))
-    dwg.add(dwg.text("X", grid_xy(size[0] + 1, -1)))
+            dwg.add(dwg.text(
+                "{:>3d}".format(xl),
+                grid_xy(xl - 0.5, -2),
+                font_size=30
+            ))
+    dwg.add(dwg.text("X", grid_xy(size[0] + 1, -1), font_size=30))
 
     for yl in range(size[1] + 1):
         if yl % 5 == 0:
@@ -225,8 +229,12 @@ def add_grid(
         add_line(dwg, (0, yl), (size[0], yl), stroke, yw)
 
         if yl % 5 == 0:
-            dwg.add(dwg.text("{:>3d}".format(yl), grid_xy(-3, (yl - 0.5))))
-    dwg.add(dwg.text("Y", grid_xy(-1, size[1] + 1)))
+            dwg.add(dwg.text(
+                "{:>3d}".format(yl),
+                grid_xy(-3, (yl - 0.5)),
+                font_size=30
+            ))
+    dwg.add(dwg.text("Y", grid_xy(-1, size[1] + 1), font_size=30))
 
 
 def add_bar(
