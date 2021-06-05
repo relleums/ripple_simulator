@@ -15,6 +15,30 @@ def add_trace(cir, start_node, trace_nodes, stop_node):
     return cir
 
 
+def bar_in_x(cir, pos, length, name, label=False):
+    assert length > 0
+    px = pos[0]
+    py = pos[1]
+    cir["nodes"][name] = {"pos": pos}
+    if label:
+        cir["nodes"][name]["name"] = name
+
+    for i in range(length):
+        posx = px + i + 1
+        cir["nodes"][name + "{:02d}".format(posx)] = {"pos": [px + i + 1, py]}
+
+    cir["bars"].append(("nodes/"+name, "nodes/"+name+"{:02d}".format(px + 1)))
+
+    for i in range(length - 1):
+        posx = px + i + 1
+        cir["bars"].append((
+            "nodes/"+name+"{:02d}".format(posx),
+            "nodes/"+name+"{:02d}".format(posx + 1)
+        ))
+
+    return cir
+
+
 def empty_circuit():
     cir = {}
     cir["relays"] = {}

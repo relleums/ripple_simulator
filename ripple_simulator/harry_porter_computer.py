@@ -144,43 +144,19 @@ def make_register(num_bits=8):
     return cir
 
 
-def _make_bar_in_x(cir, pos, length, name, label=False):
-    assert length > 0
-    px = pos[0]
-    py = pos[1]
-    cir["nodes"][name] = {"pos": pos}
-    if label:
-        cir["nodes"][name]["name"] = name
-
-    for i in range(length):
-        posx = px + i + 1
-        cir["nodes"][name + "{:02d}".format(posx)] = {"pos": [px + i + 1, py]}
-
-    cir["bars"].append(("nodes/"+name, "nodes/"+name+"{:02d}".format(px + 1)))
-
-    for i in range(length - 1):
-        posx = px + i + 1
-        cir["bars"].append((
-            "nodes/"+name+"{:02d}".format(posx),
-            "nodes/"+name+"{:02d}".format(posx + 1)
-        ))
-
-    return cir
-
-
 def make_clock(periode):
     cir = build.empty_circuit()
 
-    cir = _make_bar_in_x(cir=cir, pos=[1, 1], length=60, name="A", label=True)
-    cir = _make_bar_in_x(cir=cir, pos=[1, 5], length=60, name="B", label=True)
-    cir = _make_bar_in_x(cir=cir, pos=[1, 9], length=60, name="C", label=True)
-    cir = _make_bar_in_x(cir=cir, pos=[1, 13], length=60, name="D", label=True)
+    cir = build.bar_in_x(cir=cir, pos=[1, 1], length=60, name="A", label=True)
+    cir = build.bar_in_x(cir=cir, pos=[1, 5], length=60, name="B", label=True)
+    cir = build.bar_in_x(cir=cir, pos=[1, 9], length=60, name="C", label=True)
+    cir = build.bar_in_x(cir=cir, pos=[1, 13], length=60, name="D", label=True)
 
-    cir = _make_bar_in_x(cir=cir, pos=[1, 36], length=60, name="V", label=True)
-    cir = _make_bar_in_x(cir=cir, pos=[1, 38], length=60, name="GND", label=True)
+    cir = build.bar_in_x(cir=cir, pos=[1, 36], length=60, name="V", label=True)
+    cir = build.bar_in_x(cir=cir, pos=[1, 38], length=60, name="GND", label=True)
 
-    cir = _make_bar_in_x(cir=cir, pos=[1, 34], length=60, name="CLOCK", label=True)
-    cir = _make_bar_in_x(cir=cir, pos=[1, 32], length=6, name="FRZ", label=True)
+    cir = build.bar_in_x(cir=cir, pos=[1, 34], length=60, name="CLOCK", label=True)
+    cir = build.bar_in_x(cir=cir, pos=[1, 32], length=6, name="FRZ", label=True)
 
     # latch A
     cir["relays"]["latch_A"] = {"pos": [2, 26], "rot": 0}
@@ -194,7 +170,7 @@ def make_clock(periode):
     cir["bars"].append(("relays/latch_C/coil0", "relays/latch_C/in0"))
     cir["bars"].append(("nodes/C07", "relays/latch_C/in0"))
 
-    cir = _make_bar_in_x(cir=cir, pos=[5, 29], length=5, name="latch_GND")
+    cir = build.bar_in_x(cir=cir, pos=[5, 29], length=5, name="latch_GND")
     cir["bars"].append(("nodes/latch_GND", "relays/latch_A/coil1"))
     cir["bars"].append(("nodes/latch_GND10", "relays/latch_C/coil1"))
     cir["bars"].append(("nodes/GND06", "nodes/latch_GND06"))
