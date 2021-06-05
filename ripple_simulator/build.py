@@ -80,7 +80,11 @@ def add_group_name(circuit, name):
         _1type = n1.split("/")[0]
         _1path = "/".join(n1.split("/")[1:])
         _1n = _1type + "/" + name + "_" + _1path
-        out["bars"].append((_0n, _1n))
+
+        if len(bar) == 3:
+            out["bars"].append((_0n, _1n, bar[2]))
+        else:
+            out["bars"].append((_0n, _1n))
 
     return out
 
