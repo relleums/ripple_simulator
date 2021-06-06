@@ -298,6 +298,38 @@ def add_node_name(dwg, pos, name):
     dwg.add(dwg.text(name, grid_xy(pos[0] + rndx, pos[1] + rndy)))
 
 
+def add_node_lamp(dwg, pos=(0,0), stroke_width=2.0, stroke="black", power=0):
+    r = 1.0
+    cx = pos[0]
+    cy = pos[1]
+    dwg.add(
+        dwg.circle(
+            grid_xy(cx, cy),
+            r * RM_PX,
+            stroke=stroke,
+            stroke_width=stroke_width,
+            fill="red" if power else "white",
+        )
+    )
+    # cross
+    dwg.add(
+        dwg.line(
+            grid_xy(cx - r/np.sqrt(2), cy - r/np.sqrt(2)),
+            grid_xy(cx + r/np.sqrt(2), cy + r/np.sqrt(2)),
+            stroke=stroke,
+            stroke_width=stroke_width,
+        )
+    )
+    dwg.add(
+        dwg.line(
+            grid_xy(cx - r/np.sqrt(2), cy + r/np.sqrt(2)),
+            grid_xy(cx + r/np.sqrt(2), cy - r/np.sqrt(2)),
+            stroke=stroke,
+            stroke_width=stroke_width,
+        )
+    )
+
+
 def add_node(
     dwg, pos=(0, 0), name=None, stroke_width=0.0, stroke="black", power=0
 ):
@@ -436,21 +468,18 @@ def add_curcuit(dwg, circuit, circuit_state):
                 power=circuit_state["nodes"][node_key],
                 name=None,
             )
-        """
-        else:
-            add_node_name(
-                dwg=dwg,
-                pos=cir["nodes"][node_key]["pos"],
-                name=node_key,
-            )
-        """
         if "name" in cir["nodes"][node_key]:
             add_label_node(
                 dwg=dwg,
                 pos=cir["nodes"][node_key]["pos"],
                 name=cir["nodes"][node_key]["name"],
             )
-
+        if "lamp" in cir["nodes"][node_key]:
+            add_node_lamp(
+                dwg=dwg,
+                pos=cir["nodes"][node_key]["pos"],
+                power=circuit_state["nodes"][node_key],
+            )
 
 def draw_circuit(path, circuit, circuit_state):
     dwg = svgwrite.Drawing(path, profile="tiny")
