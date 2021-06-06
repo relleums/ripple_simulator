@@ -5,87 +5,97 @@ from . import logic
 
 def make_register(num_bits=8):
     cir = build.empty_circuit()
+    cir = build.bar_x(cir=cir, pos=[1, 37], length=60, name="V", label=True)
+    cir = build.bar_x(cir=cir, pos=[1, 39], length=60, name="GND", label=True)
 
-    cir["nodes"]["V"] = {"pos": [63, 36], "name": "V"}
+    ox = 10
 
+    # bit relays
     for bit in range(num_bits):
-        cir["relays"]["enable_{:d}".format(bit)] = {
-            "pos": [1 + bit * 7, 9],
+        cir["relays"]["bit-{:02d}".format(bit)] = {
+            "pos": [ox + 1 + bit * 7, 4],
+            "rot": 1,
+        }
+
+    # enable relays
+    for bit in range(num_bits):
+        cir["relays"]["enable-{:02d}".format(bit)] = {
+            "pos": [ox + 1 + bit * 7, 9],
             "rot": 1,
         }
 
     # bits GND
     for bit in range(num_bits):
-        cir["nodes"]["gnd_bit_{:d}".format(bit)] = {"pos": [5 + bit * 7, 2]}
+        cir["nodes"]["gnd-bit-{:02d}".format(bit)] = {"pos": [ox + 5 + bit * 7, 2]}
     for bit in range(num_bits - 1):
         cir["bars"].append(
             (
-                "nodes/gnd_bit_{:d}".format(bit),
-                "nodes/gnd_bit_{:d}".format(bit + 1),
+                "nodes/gnd-bit-{:02d}".format(bit),
+                "nodes/gnd-bit-{:02d}".format(bit + 1),
             )
         )
     for bit in range(num_bits):
         cir["bars"].append(
             (
-                "nodes/gnd_bit_{:d}".format(bit),
-                "relays/bit_{:d}/coil1".format(bit),
+                "nodes/gnd-bit-{:02d}".format(bit),
+                "relays/bit-{:02d}/coil1".format(bit),
             )
         )
 
     # bits hold
     for bit in range(num_bits):
-        cir["nodes"]["hold_{:d}".format(bit)] = {"pos": [6 + bit * 7, 3]}
+        cir["nodes"]["hold-{:02d}".format(bit)] = {"pos": [ox + 6 + bit * 7, 3]}
     for bit in range(num_bits - 1):
         cir["bars"].append(
-            ("nodes/hold_{:d}".format(bit), "nodes/hold_{:d}".format(bit + 1))
+            ("nodes/hold-{:02d}".format(bit), "nodes/hold-{:02d}".format(bit + 1))
         )
     for bit in range(num_bits):
         cir["bars"].append(
-            ("nodes/hold_{:d}".format(bit), "relays/bit_{:d}/nop".format(bit))
+            ("nodes/hold-{:02d}".format(bit), "relays/bit-{:02d}/nop".format(bit))
         )
 
     # bit latch
     for bit in range(num_bits):
         cir["bars"].append(
             (
-                "relays/bit_{:d}/in0".format(bit),
-                "relays/bit_{:d}/coil0".format(bit),
+                "relays/bit-{:02d}/in0".format(bit),
+                "relays/bit-{:02d}/coil0".format(bit),
             )
         )
 
     # enable GND
     for bit in range(num_bits):
-        cir["nodes"]["gnd_ena_{:d}".format(bit)] = {"pos": [5 + bit * 7, 7]}
+        cir["nodes"]["gnd-ena-{:02d}".format(bit)] = {"pos": [ox + 5 + bit * 7, 7]}
     for bit in range(num_bits - 1):
         cir["bars"].append(
             (
-                "nodes/gnd_ena_{:d}".format(bit),
-                "nodes/gnd_ena_{:d}".format(bit + 1),
+                "nodes/gnd-ena-{:02d}".format(bit),
+                "nodes/gnd-ena-{:02d}".format(bit + 1),
             )
         )
     for bit in range(num_bits):
         cir["bars"].append(
             (
-                "nodes/gnd_ena_{:d}".format(bit),
-                "relays/enable_{:d}/coil1".format(bit),
+                "nodes/gnd-ena-{:02d}".format(bit),
+                "relays/enable-{:02d}/coil1".format(bit),
             )
         )
 
     # enable enable
     for bit in range(num_bits):
-        cir["nodes"]["ena_ena_{:d}".format(bit)] = {"pos": [5 + bit * 7, 8]}
+        cir["nodes"]["ena-ena-{:02d}".format(bit)] = {"pos": [ox + 5 + bit * 7, 8]}
     for bit in range(num_bits - 1):
         cir["bars"].append(
             (
-                "nodes/ena_ena_{:d}".format(bit),
-                "nodes/ena_ena_{:d}".format(bit + 1),
+                "nodes/ena-ena-{:02d}".format(bit),
+                "nodes/ena-ena-{:02d}".format(bit + 1),
             )
         )
     for bit in range(num_bits):
         cir["bars"].append(
             (
-                "nodes/ena_ena_{:d}".format(bit),
-                "relays/enable_{:d}/coil0".format(bit),
+                "nodes/ena-ena-{:02d}".format(bit),
+                "relays/enable-{:02d}/coil0".format(bit),
             )
         )
 
@@ -93,17 +103,24 @@ def make_register(num_bits=8):
     for bit in range(num_bits):
         cir["bars"].append(
             (
-                "relays/enable_{:d}/in1".format(bit),
-                "relays/bit_{:d}/in0".format(bit),
+                "relays/enable-{:02d}/in1".format(bit),
+                "relays/bit-{:02d}/in0".format(bit),
             )
         )
 
+    # enable to bus
     for bit in range(num_bits):
-        cir["relays"]["bit_{:d}".format(bit)] = {
-            "pos": [1 + bit * 7, 4],
-            "rot": 1,
-        }
+        node_name = "BUS{:02d}".format(bit)
+        cir["nodes"][node_name] = {"pos": [ox + 6 + bit * 7, 10], "name": node_name}
+        cir["bars"].append(
+            (
+                "relays/enable-{:02d}/nop".format(bit),
+                "nodes/" + node_name,
+            )
+        )
 
+
+    """
     cir["relays"]["load_not"] = {"pos": [62, 1], "rot": 3}
     cir["bars"].append(
         ("relays/load_not/ncl", "relays/bit_{:d}/nop".format(num_bits - 1))
@@ -125,7 +142,7 @@ def make_register(num_bits=8):
         trace_nodes=[("001", [59, 1]),],
     )
 
-    # load-not GNG
+    # load-not GND
     cir = build.trace(
         cir,
         start_node="relays/load_not/coil1",
@@ -133,13 +150,14 @@ def make_register(num_bits=8):
         trace_nodes=[("002", [58, 2])],
     )
 
-    # load-not GNG
+    # load-not GND
     cir = build.trace(
         cir,
         start_node="relays/load/ncl",
         stop_node="relays/enable_{:d}/coil0".format(num_bits - 1),
         trace_nodes=[("003", [54, 14])],
     )
+    """
 
     return cir
 
