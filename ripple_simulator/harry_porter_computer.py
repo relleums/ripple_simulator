@@ -8,7 +8,7 @@ def make_register(num_bits=8):
     cir = build.bar_x(cir=cir, pos=[1, 37], length=60, name="V", label=True)
     cir = build.bar_x(cir=cir, pos=[1, 39], length=60, name="GND", label=True)
 
-    ox = 10
+    ox = 5
 
     # bit relays
     for bit in range(num_bits):
