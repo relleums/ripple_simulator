@@ -330,16 +330,16 @@ def make_clock(periode):
 
     # lamps
     # =====
-    cir["nodes"]["LAMP-A"] = {"pos": [16, 1+2], "lamp": True}
-    cir["bars"].append(("nodes/LAMP-A", "nodes/A16"))
+    cir["nodes"]["LAMP-A"] = {"pos": [28, 1+2], "lamp": True}
+    cir["bars"].append(("nodes/LAMP-A", "nodes/A28"))
 
-    cir["nodes"]["LAMP-B"] = {"pos": [16, 5+2], "lamp": True}
-    cir["bars"].append(("nodes/LAMP-B", "nodes/B16"))
+    cir["nodes"]["LAMP-B"] = {"pos": [28, 5+2], "lamp": True}
+    cir["bars"].append(("nodes/LAMP-B", "nodes/B28"))
 
-    cir["nodes"]["LAMP-C"] = {"pos": [16, 9+2], "lamp": True}
-    cir["bars"].append(("nodes/LAMP-C", "nodes/C16"))
+    cir["nodes"]["LAMP-C"] = {"pos": [28, 9+2], "lamp": True}
+    cir["bars"].append(("nodes/LAMP-C", "nodes/C28"))
 
-    cir["nodes"]["LAMP-D"] = {"pos": [16, 13+2], "lamp": True}
-    cir["bars"].append(("nodes/LAMP-D", "nodes/D16"))
+    cir["nodes"]["LAMP-D"] = {"pos": [28, 13+2], "lamp": True}
+    cir["bars"].append(("nodes/LAMP-D", "nodes/D28"))
 
     return cir
