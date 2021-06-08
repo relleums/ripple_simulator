@@ -298,7 +298,7 @@ def add_node_name(dwg, pos, name):
     dwg.add(dwg.text(name, grid_xy(pos[0] + rndx, pos[1] + rndy)))
 
 
-def add_node_lamp(dwg, pos=(0,0), stroke_width=2.0, stroke="black", power=0):
+def add_node_lamp(dwg, pos=(0, 0), stroke_width=2.0, stroke="black", power=0):
     r = 1.0
     cx = pos[0]
     cy = pos[1]
@@ -314,16 +314,16 @@ def add_node_lamp(dwg, pos=(0,0), stroke_width=2.0, stroke="black", power=0):
     # cross
     dwg.add(
         dwg.line(
-            grid_xy(cx - r/np.sqrt(2), cy - r/np.sqrt(2)),
-            grid_xy(cx + r/np.sqrt(2), cy + r/np.sqrt(2)),
+            grid_xy(cx - r / np.sqrt(2), cy - r / np.sqrt(2)),
+            grid_xy(cx + r / np.sqrt(2), cy + r / np.sqrt(2)),
             stroke=stroke,
             stroke_width=stroke_width,
         )
     )
     dwg.add(
         dwg.line(
-            grid_xy(cx - r/np.sqrt(2), cy + r/np.sqrt(2)),
-            grid_xy(cx + r/np.sqrt(2), cy - r/np.sqrt(2)),
+            grid_xy(cx - r / np.sqrt(2), cy + r / np.sqrt(2)),
+            grid_xy(cx + r / np.sqrt(2), cy - r / np.sqrt(2)),
             stroke=stroke,
             stroke_width=stroke_width,
         )
@@ -480,6 +480,7 @@ def add_curcuit(dwg, circuit, circuit_state):
                 pos=cir["nodes"][node_key]["pos"],
                 power=circuit_state["nodes"][node_key],
             )
+
 
 def draw_circuit(path, circuit, circuit_state):
     dwg = svgwrite.Drawing(path, profile="tiny")

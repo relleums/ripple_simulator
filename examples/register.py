@@ -39,7 +39,7 @@ for step in range(5):
     )
 
     if DRAW:
-        #if not os.path.exists("test_{:06d}.jpg".format(step)):
+        # if not os.path.exists("test_{:06d}.jpg".format(step)):
         ris.draw.draw_circuit(
             path="test_{:06d}.svg".format(step),
             circuit=circuit,
