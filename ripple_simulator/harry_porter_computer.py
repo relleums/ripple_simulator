@@ -184,45 +184,6 @@ def make_register(num_bits=4):
 
     cir = build.trace(cir, "relays/LOAD-NOT-SELECT-2/ncl", [], "nodes/ENABLE")
 
-    """
-    cir["relays"]["load_not"] = {"pos": [62, 1], "rot": 3}
-    cir["bars"].append(
-        ("relays/load_not/ncl", "relays/bit_{:d}/nop".format(num_bits - 1))
-    )
-
-    cir["relays"]["load"] = {"pos": [62, 11], "rot": 3}
-    cir["relays"]["select"] = {"pos": [62, 6], "rot": 3}
-
-    cir["nodes"]["LOAD"] = {"pos": [63, 2], "name": "LOAD"}
-    cir["nodes"]["load_0"] = {"pos": [58, 5]}
-    cir["nodes"]["load_1"] = {"pos": [59, 5]}
-    cir["bars"].append(("nodes/LOAD", "nodes/load_1"))
-    cir["bars"].append(("nodes/load_1", "nodes/load_0"))
-    cir["bars"].append(("relays/select/coil0", "nodes/load_0"))
-    cir = build.trace(
-        cir,
-        start_node="relays/load_not/coil0",
-        stop_node="nodes/load_1",
-        trace_nodes=[("001", [59, 1]),],
-    )
-
-    # load-not GND
-    cir = build.trace(
-        cir,
-        start_node="relays/load_not/coil1",
-        stop_node="nodes/gnd_bit_{:d}".format(num_bits - 1),
-        trace_nodes=[("002", [58, 2])],
-    )
-
-    # load-not GND
-    cir = build.trace(
-        cir,
-        start_node="relays/load/ncl",
-        stop_node="relays/enable_{:d}/coil0".format(num_bits - 1),
-        trace_nodes=[("003", [54, 14])],
-    )
-    """
-
     return cir
 
 
