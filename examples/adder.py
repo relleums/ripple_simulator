@@ -2,7 +2,7 @@ import ripple_simulator as ris
 import os
 import subprocess
 
-"""
+
 cir_ha = ris.logic.half_adder(labels=True)
 cir_ha = ris.build.add_group_name(circuit=cir_ha, name="HA")
 cir_ha = ris.build.translate(circuit=cir_ha, pos=[10, 0])
@@ -14,8 +14,8 @@ cir_fa = ris.build.translate(circuit=cir_fa, pos=[30, 4])
 cir_rca = ris.logic.ripple_carry_adder(num_bits=4, labels=True)
 cir_rca = ris.build.add_group_name(circuit=cir_rca, name="RCA")
 cir_rca = ris.build.translate(circuit=cir_rca, pos=[1, 1])
-
-cir = ris.build.merge_circuits([cir_rca])
+"""
+cir = ris.build.merge_circuits([cir_fa])
 
 circuit = ris.compile(circuit=cir)
 meshes, relays, capacitors = ris.compile_relay_meshes(circuit=circuit)
