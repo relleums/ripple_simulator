@@ -23,7 +23,7 @@ def make_register(num_bits=4, ADRBUS=True):
 
     # enable relays
     for bit in range(num_bits):
-        cir["relays"]["enable-{:02d}".format(bit)] = {
+        cir["relays"]["ena-dat-{:02d}".format(bit)] = {
             "pos": [ox + 1 + bit * 7, 14],
             "rot": 1,
         }
@@ -93,7 +93,7 @@ def make_register(num_bits=4, ADRBUS=True):
         cir["bars"].append(
             (
                 "nodes/gnd-ena-{:02d}".format(bit),
-                "relays/enable-{:02d}/coil1".format(bit),
+                "relays/ena-dat-{:02d}/coil1".format(bit),
             )
         )
 
@@ -113,7 +113,7 @@ def make_register(num_bits=4, ADRBUS=True):
         cir["bars"].append(
             (
                 "nodes/ena-ena-{:02d}".format(bit),
-                "relays/enable-{:02d}/coil0".format(bit),
+                "relays/ena-dat-{:02d}/coil0".format(bit),
             )
         )
 
@@ -121,7 +121,7 @@ def make_register(num_bits=4, ADRBUS=True):
     for bit in range(num_bits):
         cir["bars"].append(
             (
-                "relays/enable-{:02d}/in1".format(bit),
+                "relays/ena-dat-{:02d}/in1".format(bit),
                 "relays/bit-{:02d}/in0".format(bit),
             )
         )
@@ -134,7 +134,7 @@ def make_register(num_bits=4, ADRBUS=True):
             "name": node_name,
         }
         cir["bars"].append(
-            ("relays/enable-{:02d}/nop".format(bit), "nodes/" + node_name,)
+            ("relays/ena-dat-{:02d}/nop".format(bit), "nodes/" + node_name,)
         )
 
     # indicator lamps
@@ -280,7 +280,7 @@ def make_register(num_bits=4, ADRBUS=True):
             cir["bars"].append(
                 (
                     "relays/ena-adr-{:02d}/in1".format(bit),
-                    "relays/enable-{:02d}/in0".format(bit),
+                    "relays/ena-dat-{:02d}/in0".format(bit),
                 )
             )
 
