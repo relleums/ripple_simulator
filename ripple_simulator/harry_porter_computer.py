@@ -11,8 +11,8 @@ def make_register(num_bits=4):
     cir["nodes"]["V"] = {"pos": [0, 3], "name": "V"}
     cir["nodes"]["GND"] = {"pos": [0, 2], "name": "GND"}
 
-    cir["nodes"]["SELECT"] = {"pos": [1, 10], "name": "SELECT"}
-    cir["nodes"]["LOAD"] = {"pos": [1, 5], "name": "LOAD"}
+    cir["nodes"]["SELECT"] = {"pos": [0, 13], "name": "SELECT"}
+    cir["nodes"]["LOAD"] = {"pos": [0, 8], "name": "LOAD"}
 
     # bit relays
     for bit in range(num_bits):
@@ -140,9 +140,28 @@ def make_register(num_bits=4):
     # indicator lamps
     for bit in range(num_bits):
         lamp_name = "LAMP{:02d}".format(bit)
+        lamp_con_node = "lam-{:02d}".format(bit)
         cir["nodes"][lamp_name] = {"pos": [ox + 4 + bit * 7, 3], "lamp": True}
+        cir["nodes"][lamp_con_node] = {"pos": [ox + 1 + bit * 7, 3]}
+
         cir["bars"].append(
-            ("relays/bit-{:02d}/in1".format(bit), "nodes/" + lamp_name,)
+            ("relays/bit-{:02d}/in1".format(bit), "nodes/" + lamp_con_node,)
+        )
+        cir["bars"].append(
+            ("nodes/" + lamp_con_node, "nodes/" + lamp_name)
+        )
+
+    # lamp gnd
+    for bit in range(num_bits):
+        cir["nodes"]["gnd-lmp-{:02d}".format(bit)] = {
+            "pos": [ox + 5 + bit * 7, 2]
+        }
+    for bit in range(num_bits - 1):
+        cir["bars"].append(
+            (
+                "nodes/gnd-lmp-{:02d}".format(bit),
+                "nodes/gnd-lmp-{:02d}".format(bit + 1),
+            )
         )
 
     cir["nodes"]["HOLD"] = {"pos": [ox, 8], "name": "HOLD"}
@@ -151,52 +170,63 @@ def make_register(num_bits=4):
     cir["nodes"]["ENABLE"] = {"pos": [ox, 13], "name": "ENABLE"}
     cir["bars"].append(("nodes/ENABLE", "nodes/ena-ena-00"))
 
-    cir = build.trace(
-        cir,
-        "nodes/gnd-ena-{:02d}".format(num_bits - 1),
-        [("gnd0", [ox + num_bits * 7, 12]), ("gnd1", [ox + num_bits * 7, 7]),],
-        "nodes/gnd-bit-{:02d}".format(num_bits - 1),
-    )
-
     cir["relays"]["LOAD-NOT-HOLD"] = {"pos": [1, 4], "rot": 1}
     cir["relays"]["LOAD-NOT-SELECT"] = {"pos": [1, 9], "rot": 1}
     cir["relays"]["LOAD-NOT-SELECT-2"] = {"pos": [1, 14], "rot": 1}
 
-    cir["bars"].append(("nodes/V", "relays/LOAD-NOT-HOLD/in0"))
-    cir["bars"].append(("nodes/V", "relays/LOAD-NOT-SELECT/in0"))
-    cir["bars"].append(("nodes/V", "relays/LOAD-NOT-SELECT-2/in0"))
+    # V
+    cir = build.trace(cir, "nodes/V", [("vv0", [1, 3])], "relays/LOAD-NOT-HOLD/in0")
+    cir["bars"].append(("relays/LOAD-NOT-HOLD/in0", "relays/LOAD-NOT-SELECT/in1"))
+    cir["bars"].append(("relays/LOAD-NOT-SELECT/in0", "relays/LOAD-NOT-SELECT-2/in1"))
 
-    cir["nodes"]["load0"] = {"pos": [4, 5]}
-    cir["bars"].append(("nodes/LOAD", "nodes/load0"))
+    # GND
+    cir["nodes"]["gnd-2-2"] = {"pos": [2, 2]}
+    cir["bars"].append(("nodes/GND", "nodes/gnd-2-2"))
 
-    cir = build.trace(cir, "relays/LOAD-NOT-SELECT/coil0", [], "nodes/load0")
+    cir["nodes"]["gnd-2-1"] = {"pos": [2, 1]}
+    cir["bars"].append(("nodes/gnd-2-2", "nodes/gnd-2-1"))
+    cir["bars"].append(("relays/LOAD-NOT-HOLD/coil1", "nodes/gnd-2-1"))
 
-    cir = build.trace(cir, "relays/LOAD-NOT-HOLD/coil0", [], "nodes/load0")
+    cir["nodes"]["gnd-2-6"] = {"pos": [2, 6]}
+    cir["bars"].append(("nodes/gnd-2-2", "nodes/gnd-2-6"))
+    cir["bars"].append(("relays/LOAD-NOT-SELECT/coil1", "nodes/gnd-2-6"))
 
-    cir = build.trace(cir, "relays/LOAD-NOT-HOLD/ncl", [], "nodes/HOLD")
+    # GND to bits
+    cir["nodes"]["gnd-2-7"] = {"pos": [2, 7]}
+    cir["bars"].append(("nodes/gnd-2-6", "nodes/gnd-2-7"))
+    cir["bars"].append(("nodes/gnd-bit-00", "nodes/gnd-2-7"))
 
-    cir = build.trace(
-        cir,
-        "nodes/SELECT", [
-            ("sel0", [7, 10]), ("sel1", [7, 11])
-        ],
-        "relays/LOAD-NOT-SELECT-2/ncl"
-    )
-    cir = build.trace(
-        cir,
-        "nodes/sel1", [
-            ("sel2", [7, 13])
-        ],
-        "nodes/ENABLE"
-    )
+    cir["nodes"]["gnd-2-11"] = {"pos": [2, 11]}
+    cir["bars"].append(("nodes/gnd-2-7", "nodes/gnd-2-11"))
+    cir["bars"].append(("relays/LOAD-NOT-SELECT-2/coil1", "nodes/gnd-2-11"))
+
+    # GND to enable
+    cir["nodes"]["gnd-2-12"] = {"pos": [2, 12]}
+    cir["bars"].append(("nodes/gnd-2-11", "nodes/gnd-2-12"))
+    cir["bars"].append(("nodes/gnd-ena-00", "nodes/gnd-2-12"))
+
+    # GND lamps
+    cir["bars"].append(("nodes/gnd-2-2", "nodes/gnd-lmp-00"))
+
+    # LOAD
+    cir["nodes"]["load-4-8"] = {"pos": [4, 8]}
+    cir["bars"].append(("nodes/LOAD", "nodes/load-4-8"))
+    cir = build.trace(cir, "relays/LOAD-NOT-SELECT/coil0", [("nn0", [4, 9])], "nodes/load-4-8")
+    cir = build.trace(cir, "relays/LOAD-NOT-HOLD/coil0", [["nn1", [4, 4]]], "nodes/load-4-8")
+    cir = build.trace(cir, "relays/LOAD-NOT-HOLD/ncl", [("hh0", [7, 1])], "nodes/HOLD")
+
+    # SELECT
+
+    cir["bars"].append(("nodes/SELECT", "nodes/ENABLE"))
+    cir = build.trace(cir, "nodes/ENABLE", [("en-7-11", [7, 11])], "relays/LOAD-NOT-SELECT-2/ncl")
 
     cir = build.trace(
         cir, "relays/LOAD-NOT-SELECT/ncl", [
-        ("lns0", [6,8]), ("lns1", [3, 8]), ("lns2", [3, 14])
+            ("sl-00", [6, 5]),
+            ("sl-01", [3, 5]),
+            ("sl-02", [3, 14]),
         ], "relays/LOAD-NOT-SELECT-2/coil0"
     )
-
-
 
     return cir
 
