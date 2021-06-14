@@ -3,7 +3,7 @@ from . import build
 from . import logic
 
 
-def make_register(num_bits=4):
+def make_register(num_bits=4, ADRBUS=True):
     cir = build.empty_circuit()
 
     ox = 7
@@ -227,6 +227,74 @@ def make_register(num_bits=4):
             ("sl-02", [3, 14]),
         ], "relays/LOAD-NOT-SELECT-2/coil0"
     )
+
+    if ADRBUS:
+        for bit in range(num_bits):
+            cir["relays"]["ena-adr-{:02d}".format(bit)] = {
+                "pos": [ox + 1 + bit * 7, 19],
+                "rot": 1,
+            }
+
+        # enable GND
+        for bit in range(num_bits):
+            cir["nodes"]["gnd-ena-adr-{:02d}".format(bit)] = {
+                "pos": [ox + 5 + bit * 7, 17]
+            }
+        for bit in range(num_bits - 1):
+            cir["bars"].append(
+                (
+                    "nodes/gnd-ena-adr-{:02d}".format(bit),
+                    "nodes/gnd-ena-adr-{:02d}".format(bit + 1),
+                )
+            )
+        for bit in range(num_bits):
+            cir["bars"].append(
+                (
+                    "nodes/gnd-ena-adr-{:02d}".format(bit),
+                    "relays/ena-adr-{:02d}/coil1".format(bit),
+                )
+            )
+
+        # enable ena-adr
+        for bit in range(num_bits):
+            cir["nodes"]["ena-ena-adr-{:02d}".format(bit)] = {
+                "pos": [ox + 5 + bit * 7, 18]
+            }
+        for bit in range(num_bits - 1):
+            cir["bars"].append(
+                (
+                    "nodes/ena-ena-adr-{:02d}".format(bit),
+                    "nodes/ena-ena-adr-{:02d}".format(bit + 1),
+                )
+            )
+        for bit in range(num_bits):
+            cir["bars"].append(
+                (
+                    "nodes/ena-ena-adr-{:02d}".format(bit),
+                    "relays/ena-adr-{:02d}/coil0".format(bit),
+                )
+            )
+
+        # bit to ena-adr
+        for bit in range(num_bits):
+            cir["bars"].append(
+                (
+                    "relays/ena-adr-{:02d}/in1".format(bit),
+                    "relays/enable-{:02d}/in0".format(bit),
+                )
+            )
+
+        # ena-adr to bus
+        for bit in range(num_bits):
+            node_name = "ADR{:02d}".format(bit)
+            cir["nodes"][node_name] = {
+                "pos": [ox + 6 + bit * 7, 20],
+                "name": node_name,
+            }
+            cir["bars"].append(
+                ("relays/ena-adr-{:02d}/nop".format(bit), "nodes/" + node_name,)
+            )
+
 
     return cir
 
