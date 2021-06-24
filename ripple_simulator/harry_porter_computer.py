@@ -302,181 +302,240 @@ def make_register(num_bits=4, ADRBUS=True):
 def make_clock(periode):
     cir = build.empty_circuit()
 
-    cir = build.bar_x(cir=cir, pos=[1, 1], length=60, name="A", label=True)
-    cir = build.bar_x(cir=cir, pos=[1, 5], length=60, name="B", label=True)
-    cir = build.bar_x(cir=cir, pos=[1, 9], length=60, name="C", label=True)
-    cir = build.bar_x(cir=cir, pos=[1, 13], length=60, name="D", label=True)
+    cir = build.bar_x(cir=cir, pos=[1, 4], length=33, name="A", label=True)
+    cir = build.bar_x(cir=cir, pos=[1, 7], length=35, name="B", label=True)
+    cir = build.bar_x(cir=cir, pos=[1, 10], length=34, name="C", label=True)
+    cir = build.bar_x(cir=cir, pos=[1, 13], length=28, name="D", label=True)
 
-    cir = build.bar_x(cir=cir, pos=[1, 36], length=60, name="V", label=True)
-    cir = build.bar_x(cir=cir, pos=[1, 38], length=60, name="GND", label=True)
+    cir = build.bar_x(cir=cir, pos=[1, 30], length=35, name="V", label=True)
+    cir = build.bar_x(cir=cir, pos=[1, 28], length=35, name="GND", label=True)
 
     cir = build.bar_x(
-        cir=cir, pos=[1, 34], length=60, name="CLOCK", label=True
+        cir=cir, pos=[1, 17], length=11, name="CLOCK", label=True
     )
-    cir = build.bar_x(cir=cir, pos=[1, 32], length=6, name="FRZ", label=True)
+    cir = build.bar_x(cir=cir, pos=[1, 26], length=3, name="FRZ", label=True)
+
+    # Freeze
+    # ======
+
+    cir["relays"]["frz1"] = {"pos": [5, 31], "rot": 2}
+    cir = build.trace(cir, "relays/frz1/coil0", [("frz1-coil0", [4, 27])], "nodes/FRZ04",)
+    cir = build.trace(cir, "relays/frz1/coil1", [("frz1-gnd", [3, 27])], "nodes/GND03",)
+    cir = build.trace(cir, "relays/frz1/in0", [], "nodes/V05",)
+
+    cir = build.bar_x(cir=cir, pos=[2, 25], length=5, name="latch_BAR")
+    cir["bars"].append(("relays/latch_A/nop", "nodes/latch_BAR"))
+    cir["bars"].append(("relays/latch_C/nop", "nodes/latch_BAR07"))
+    cir["bars"].append(("relays/frz1/nop", "nodes/latch_BAR05"))
 
     # latch A
-    cir["relays"]["latch_A"] = {"pos": [2, 26], "rot": 0}
-    cir["bars"].append(("relays/latch_A/nop", "nodes/FRZ02"))
+    cir["relays"]["latch_A"] = {"pos": [2, 19], "rot": 0}
+    #cir["bars"].append(("relays/latch_A/nop", "nodes/FRZ02"))
     cir["bars"].append(("relays/latch_A/coil0", "relays/latch_A/in0"))
     cir["bars"].append(("nodes/A02", "relays/latch_A/in0"))
 
     # latch C
-    cir["relays"]["latch_C"] = {"pos": [7, 26], "rot": 0}
-    cir["bars"].append(("relays/latch_C/nop", "nodes/FRZ07"))
+    cir["relays"]["latch_C"] = {"pos": [7, 19], "rot": 0}
+    #cir["bars"].append(("relays/latch_C/nop", "nodes/FRZ07"))
     cir["bars"].append(("relays/latch_C/coil0", "relays/latch_C/in0"))
     cir["bars"].append(("nodes/C07", "relays/latch_C/in0"))
 
-    cir = build.bar_x(cir=cir, pos=[5, 29], length=6, name="latch_GND")
+    cir = build.bar_x(cir=cir, pos=[5, 22], length=5, name="latch_GND")
     cir["bars"].append(("nodes/latch_GND", "relays/latch_A/coil1"))
     cir["bars"].append(("nodes/latch_GND10", "relays/latch_C/coil1"))
-    cir["bars"].append(("nodes/GND11", "nodes/latch_GND11"))
+    cir["bars"].append(("nodes/GND09", "nodes/latch_GND09"))
 
     # XOR(C, D)
-    cir["relays"]["xorc"] = {"pos": [17, 26], "rot": 0}
-    cir["relays"]["xord"] = {"pos": [22, 26], "rot": 0}
+    # =========
+    cir["relays"]["xorc"] = {"pos": [12, 19], "rot": 0}
+    cir["relays"]["xord"] = {"pos": [15, 31], "rot": 2}
     cir["bars"].append(("relays/xorc/ncl", "relays/xord/nop"))
+    cir = build.trace(cir, "relays/xorc/nop", [], "relays/xord/ncl",)
     cir = build.trace(
-        cir,
-        "relays/xorc/nop",
-        [("xorbar0", [17, 32]), ("xorbar1", [25, 32]),],
-        "relays/xord/ncl",
-    )
-    cir = build.trace(
-        cir, "relays/xorc/in0", [("xorclock0", [16, 26]),], "nodes/CLOCK16"
+        cir, "relays/xorc/in0", [], "nodes/CLOCK12"
     )
 
     cir = build.trace(
-        cir, "relays/xord/in1", [("xorV", [27, 26]),], "nodes/V27"
+        cir, "relays/xord/in1", [], "nodes/V12"
     )
 
     cir = build.trace(
-        cir, "relays/xorc/coil0", [("xorc", [18, 30]),], "nodes/C18"
+        cir, "relays/xorc/coil0", [("xorc", [13, 23]),], "nodes/C13"
     )
     cir = build.trace(
-        cir, "relays/xord/coil0", [("xord", [23, 30]),], "nodes/D23"
+        cir, "relays/xord/coil0", [("xord", [14, 27]),], "nodes/D14"
     )
-    cir = build.bar_x(cir=cir, pos=[20, 29], length=6, name="xorgnd")
-    cir["bars"].append(("nodes/xorgnd", "relays/xorc/coil1"))
-    cir["bars"].append(("nodes/xorgnd25", "relays/xord/coil1"))
-    cir["bars"].append(("nodes/xorgnd26", "nodes/GND26"))
+    # GND
+    cir = build.trace(
+        cir, "relays/xorc/coil1", [("xorc-gnd", [16, 23]),], "nodes/GND16"
+    )
+    cir = build.trace(
+        cir, "relays/xord/coil1", [("xord-gnd", [13, 27]),], "nodes/GND13"
+    )
 
     # Cycler
     # ======
 
     # CYCLER AD(B, C)
     # ---------------
-    cir["relays"]["cycleAD-B"] = {"pos": [35, 31], "rot": 2}
-    cir["relays"]["cycleAD-C"] = {"pos": [35, 24], "rot": 2}
+    cir["relays"]["cycleAD-B"] = {"pos": [25, 31], "rot": 2}
+    cir["relays"]["cycleAD-C"] = {"pos": [25, 24], "rot": 2}
 
     cir = build.trace(
         cir,
         "relays/cycleAD-C/coil1",
-        [("cycADgnd0", [31, 20]), ("cycADgnd1", [31, 27]),],
+        [("cycADgnd0", [23, 20]), ("cycADgnd1", [23, 27]),],
         "relays/cycleAD-B/coil1",
     )
-    cir["bars"].append(("nodes/cycADgnd1", "nodes/GND31"))
+    cir["bars"].append(("nodes/cycADgnd1", "nodes/GND23"))
 
-    cir["bars"].append(("nodes/V35", "relays/cycleAD-B/in0"))
+    cir["bars"].append(("nodes/V25", "relays/cycleAD-B/in0"))
 
     cir = build.trace(
-        cir, "relays/cycleAD-B/coil0", [("cycAD-B0", [37, 27]),], "nodes/B37",
+        cir, "relays/cycleAD-B/coil0", [("cycAD-B0", [24, 27]),], "nodes/B24",
     )
     cir["bars"].append(("relays/cycleAD-B/ncl", "relays/cycleAD-C/in1"))
 
     cir = build.trace(
-        cir, "relays/cycleAD-C/coil0", [("cycAD-C0", [36, 20]),], "nodes/C36",
+        cir, "relays/cycleAD-C/coil0", [("cycAD-C0", [26, 20]),], "nodes/C26",
     )
-    cir["bars"].append(("relays/cycleAD-C/ncl", "nodes/A32"))
-    cir["bars"].append(("relays/cycleAD-C/nop", "nodes/D35"))
+    cir["bars"].append(("relays/cycleAD-C/ncl", "nodes/A22"))
+    cir["bars"].append(("relays/cycleAD-C/nop", "nodes/D25"))
 
     # CYCLER B(D, A)
     # --------------
-    cir["relays"]["cycleB-D"] = {"pos": [45, 31], "rot": 2}
-    cir["relays"]["cycleB-A"] = {"pos": [45, 24], "rot": 2}
+    cir["relays"]["cycleB-D"] = {"pos": [30, 31], "rot": 2}
+    cir["relays"]["cycleB-A"] = {"pos": [30, 24], "rot": 2}
     cir = build.trace(
         cir,
         "relays/cycleB-A/coil1",
-        [("cycBgnd0", [41, 20]), ("cycBgnd1", [41, 27]),],
+        [("cycBgnd0", [28, 20]), ("cycBgnd1", [28, 27]),],
         "relays/cycleB-D/coil1",
     )
-    cir["bars"].append(("nodes/cycBgnd1", "nodes/GND41"))
-    cir["bars"].append(("nodes/V45", "relays/cycleB-D/in0"))
+    cir["bars"].append(("nodes/cycBgnd1", "nodes/GND28"))
+    cir["bars"].append(("nodes/V30", "relays/cycleB-D/in0"))
 
     cir = build.trace(
-        cir, "relays/cycleB-D/coil0", [("cycB-D0", [47, 27]),], "nodes/D47",
+        cir, "relays/cycleB-D/coil0", [("cycB-D0", [29, 27]),], "nodes/D29",
     )
     cir["bars"].append(("relays/cycleB-D/ncl", "relays/cycleB-A/in1"))
     cir = build.trace(
-        cir, "relays/cycleB-A/coil0", [("cycB-A0", [46, 20]),], "nodes/A46",
+        cir, "relays/cycleB-A/coil0", [("cycB-A0", [31, 20]),], "nodes/A31",
     )
-    cir["bars"].append(("relays/cycleB-A/nop", "nodes/B45"))
+    cir["bars"].append(("relays/cycleB-A/nop", "nodes/B30"))
 
     # CYCLER C(A, B)
     # --------------
-    cir["relays"]["cycleC-A"] = {"pos": [55, 31], "rot": 2}
-    cir["relays"]["cycleC-B"] = {"pos": [55, 24], "rot": 2}
+    cir["relays"]["cycleC-A"] = {"pos": [35, 31], "rot": 2}
+    cir["relays"]["cycleC-B"] = {"pos": [35, 24], "rot": 2}
     cir = build.trace(
         cir,
         "relays/cycleC-B/coil1",
-        [("cycCgnd0", [51, 20]), ("cycCgnd1", [51, 27]),],
+        [("cycCgnd0", [33, 20]), ("cycCgnd1", [33, 27]),],
         "relays/cycleC-A/coil1",
     )
-    cir["bars"].append(("nodes/cycCgnd1", "nodes/GND51"))
-    cir["bars"].append(("nodes/V55", "relays/cycleC-A/in0"))
+    cir["bars"].append(("nodes/cycCgnd1", "nodes/GND33"))
+    cir["bars"].append(("nodes/V35", "relays/cycleC-A/in0"))
 
     cir = build.trace(
-        cir, "relays/cycleC-A/coil0", [("cycC-A0", [57, 27]),], "nodes/A57",
+        cir, "relays/cycleC-A/coil0", [("cycC-A0", [34, 27]),], "nodes/A34",
     )
     cir["bars"].append(("relays/cycleC-A/ncl", "relays/cycleC-B/in1"))
     cir = build.trace(
-        cir, "relays/cycleC-B/coil0", [("cycC-B0", [56, 20]),], "nodes/B56",
+        cir, "relays/cycleC-B/coil0", [("cycC-B0", [36, 20]),], "nodes/B36",
     )
-    cir["bars"].append(("relays/cycleC-B/nop", "nodes/C55"))
+    cir["bars"].append(("relays/cycleC-B/nop", "nodes/C35"))
 
     # capacitors
     # ==========
 
+    CAP_X = 9
     cir["capacitors"]["CAP-A"] = {
-        "pos": [13, 1],
+        "pos": [CAP_X, 4],
         "rot": 0,
         "capacity": periode,
     }
-    cir["bars"].append(("capacitors/CAP-A", "nodes/A13"))
+    cir["bars"].append(("capacitors/CAP-A", "nodes/A{:02d}".format(CAP_X)))
 
     cir["capacitors"]["CAP-B"] = {
-        "pos": [13, 5],
+        "pos": [CAP_X, 7],
         "rot": 0,
         "capacity": periode,
     }
-    cir["bars"].append(("capacitors/CAP-B", "nodes/B13"))
+    cir["bars"].append(("capacitors/CAP-B", "nodes/B{:02d}".format(CAP_X)))
 
     cir["capacitors"]["CAP-C"] = {
-        "pos": [13, 9],
+        "pos": [CAP_X, 10],
         "rot": 0,
         "capacity": periode,
     }
-    cir["bars"].append(("capacitors/CAP-C", "nodes/C13"))
+    cir["bars"].append(("capacitors/CAP-C", "nodes/C{:02d}".format(CAP_X)))
 
     cir["capacitors"]["CAP-D"] = {
-        "pos": [13, 13],
+        "pos": [CAP_X, 13],
         "rot": 0,
         "capacity": periode,
     }
-    cir["bars"].append(("capacitors/CAP-D", "nodes/D13"))
+    cir["bars"].append(("capacitors/CAP-D", "nodes/D{:02d}".format(CAP_X)))
 
     # lamps
     # =====
-    cir["nodes"]["LAMP-A"] = {"pos": [28, 1 + 2], "lamp": True}
-    cir["bars"].append(("nodes/LAMP-A", "nodes/A28"))
+    LAM_X = 18
+    cir["nodes"]["LAMP-A"] = {"pos": [LAM_X, 4 + 2], "lamp": True}
+    cir["bars"].append(("nodes/LAMP-A", "nodes/A{:02d}".format(LAM_X)))
 
-    cir["nodes"]["LAMP-B"] = {"pos": [28, 5 + 2], "lamp": True}
-    cir["bars"].append(("nodes/LAMP-B", "nodes/B28"))
+    cir["nodes"]["LAMP-B"] = {"pos": [LAM_X, 7 + 2], "lamp": True}
+    cir["bars"].append(("nodes/LAMP-B", "nodes/B{:02d}".format(LAM_X)))
 
-    cir["nodes"]["LAMP-C"] = {"pos": [28, 9 + 2], "lamp": True}
-    cir["bars"].append(("nodes/LAMP-C", "nodes/C28"))
+    cir["nodes"]["LAMP-C"] = {"pos": [LAM_X, 10 + 2], "lamp": True}
+    cir["bars"].append(("nodes/LAMP-C", "nodes/C{:02d}".format(LAM_X)))
 
-    cir["nodes"]["LAMP-D"] = {"pos": [28, 13 + 2], "lamp": True}
-    cir["bars"].append(("nodes/LAMP-D", "nodes/D28"))
+    cir["nodes"]["LAMP-D"] = {"pos": [LAM_X, 13 + 2], "lamp": True}
+    cir["bars"].append(("nodes/LAMP-D", "nodes/D{:02d}".format(LAM_X)))
+
+    return cir
+
+
+def make_sequencer(num_steps):
+    cir = build.empty_circuit()
+
+    cir["nodes"]["V"] = {"pos": [0, 0], "name": "V"}
+    cir["nodes"]["GND"] = {"pos": [0, 3], "name": "GND"}
+
+    cir["nodes"]["CLOCK"] = {"pos": [0, 4], "name": "CLOCK"}
+
+
+    cir["nodes"]["ANC"] = {"pos": [8, 6], "name": "ANC"}
+    cir["nodes"]["UNC"] = {"pos": [5, 6], "name": "UNC"}
+
+    cir["relays"]["clocker"] = {"pos": [5, 0], "rot": 0}
+
+    cir["bars"].append(("relays/clocker/in0", "nodes/V"))
+    cir["bars"].append(("relays/clocker/coil0", "nodes/CLOCK"))
+
+    cir["bars"].append(("relays/clocker/nop", "nodes/UNC"))
+    cir["bars"].append(("relays/clocker/ncl", "nodes/ANC"))
+
+
+    cir["nodes"]["RESET"] = {"pos": [0, 14], "name": "RESET"}
+
+
+    for t in range(num_steps):
+        rname = "T{:02d}".format(t)
+        cir["relays"][rname] = {"pos": [5 + 7*t, 15], "rot": 1}
+        cir["bars"].append(("relays/"+rname+"/coil0", "relays/"+rname+"/in0"))
+        cir["nodes"][rname+"_sel"] = {"pos": [10 + 7*t, 14]}
+        cir["bars"].append(("relays/"+rname+"/nop", "nodes/"+rname+"_sel"))
+
+
+    for t in range(num_steps - 1):
+        rname = "T{:02d}".format(t)
+        next_rname = "T{:02d}".format(t + 1)
+        cir["bars"].append(("nodes/"+rname+"_sel", "nodes/"+next_rname+"_sel"))
+
+    cir["bars"].append(("nodes/RESET", "nodes/T00_sel"))
+
+
+
 
     return cir

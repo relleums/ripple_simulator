@@ -21,7 +21,7 @@ DRAW = True
 
 # run ripple simulation
 # ---------------------
-for step in range(1):
+for step in range(200):
     print(step)
     relays, capacitors, meshes_on_power = ris.simulate.one_step(
         relays=relays,
@@ -38,20 +38,20 @@ for step in range(1):
     )
 
     if DRAW:
-        if not os.path.exists("clock_{:06d}.jpg".format(step)):
-            ris.draw.draw_circuit(
-                path="clock_{:06d}.svg".format(step),
-                circuit=circuit,
-                circuit_state=circuit_state,
-            )
-            subprocess.call(
-                [
-                    "convert",
-                    "clock_{:06d}.svg".format(step),
-                    "clock_{:06d}.jpg".format(step),
-                ]
-            )
-            subprocess.call(["rm", "clock_{:06d}.svg".format(step)])
+        #if not os.path.exists("clock_{:06d}.jpg".format(step)):
+        ris.draw.draw_circuit(
+            path="clock_{:06d}.svg".format(step),
+            circuit=circuit,
+            circuit_state=circuit_state,
+        )
+        subprocess.call(
+            [
+                "convert",
+                "clock_{:06d}.svg".format(step),
+                "clock_{:06d}.jpg".format(step),
+            ]
+        )
+        subprocess.call(["rm", "clock_{:06d}.svg".format(step)])
 
     steps.append(step)
 
