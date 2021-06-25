@@ -38,7 +38,7 @@ for step in range(1):
     )
 
     if DRAW:
-        #if not os.path.exists("clock_{:06d}.jpg".format(step)):
+        # if not os.path.exists("clock_{:06d}.jpg".format(step)):
         ris.draw.draw_circuit(
             path="clock_{:06d}.svg".format(step),
             circuit=circuit,
