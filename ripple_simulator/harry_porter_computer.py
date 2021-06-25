@@ -303,9 +303,17 @@ def make_clock(periode):
     cir = build.empty_circuit()
 
     cir = build.bar_x(cir=cir, pos=[1, 4], length=33, name="A", label=True)
-    cir = build.bar_x(cir=cir, pos=[1, 7], length=35, name="B", label=True)
-    cir = build.bar_x(cir=cir, pos=[1, 10], length=34, name="C", label=True)
-    cir = build.bar_x(cir=cir, pos=[1, 13], length=28, name="D", label=True)
+    cir = build.bar_x(cir=cir, pos=[5, 5], length=16, name="A-GND", label=False)
+
+    cir = build.bar_x(cir=cir, pos=[5, 7], length=31, name="B", label=True)
+    cir = build.bar_x(cir=cir, pos=[5, 8], length=16, name="B-GND", label=False)
+
+    cir = build.bar_x(cir=cir, pos=[5, 10], length=30, name="C", label=True)
+    cir = build.bar_x(cir=cir, pos=[5, 11], length=16, name="C-GND", label=False)
+
+    cir = build.bar_x(cir=cir, pos=[5, 13], length=24, name="D", label=True)
+    cir = build.bar_x(cir=cir, pos=[5, 14], length=16, name="D-GND", label=False)
+
 
     cir = build.bar_x(cir=cir, pos=[1, 30], length=35, name="V", label=True)
     cir = build.bar_x(cir=cir, pos=[1, 28], length=35, name="GND", label=True)
@@ -318,7 +326,7 @@ def make_clock(periode):
     # Freeze
     # ======
 
-    cir["relays"]["frz1"] = {"pos": [5, 31], "rot": 2}
+    cir["relays"]["frz1"] = {"pos": [5, 31], "rot": 2, "comment": "Prevent backdriving thr FRZ-line"}
     cir = build.trace(cir, "relays/frz1/coil0", [("frz1-coil0", [4, 27])], "nodes/FRZ04",)
     cir = build.trace(cir, "relays/frz1/coil1", [("frz1-gnd", [3, 27])], "nodes/GND03",)
     cir = build.trace(cir, "relays/frz1/in0", [], "nodes/V05",)
@@ -343,7 +351,7 @@ def make_clock(periode):
     cir = build.bar_x(cir=cir, pos=[5, 22], length=5, name="latch_GND")
     cir["bars"].append(("nodes/latch_GND", "relays/latch_A/coil1"))
     cir["bars"].append(("nodes/latch_GND10", "relays/latch_C/coil1"))
-    cir["bars"].append(("nodes/GND09", "nodes/latch_GND09"))
+    cir = build.trace(cir, "relays/latch_C/coil1", [("latch_C-GND00", [11, 23])], "nodes/GND11")
 
     # XOR(C, D)
     # =========
@@ -356,7 +364,7 @@ def make_clock(periode):
     )
 
     cir = build.trace(
-        cir, "relays/xord/in1", [], "nodes/V12"
+        cir, "relays/xord/in0", [], "nodes/V15"
     )
 
     cir = build.trace(
@@ -480,17 +488,17 @@ def make_clock(periode):
 
     # lamps
     # =====
-    LAM_X = 18
-    cir["nodes"]["LAMP-A"] = {"pos": [LAM_X, 4 + 2], "lamp": True}
+    LAM_X = 20
+    cir["nodes"]["LAMP-A"] = {"pos": [LAM_X, 4 + 1], "lamp": True}
     cir["bars"].append(("nodes/LAMP-A", "nodes/A{:02d}".format(LAM_X)))
 
-    cir["nodes"]["LAMP-B"] = {"pos": [LAM_X, 7 + 2], "lamp": True}
+    cir["nodes"]["LAMP-B"] = {"pos": [LAM_X, 7 + 1], "lamp": True}
     cir["bars"].append(("nodes/LAMP-B", "nodes/B{:02d}".format(LAM_X)))
 
-    cir["nodes"]["LAMP-C"] = {"pos": [LAM_X, 10 + 2], "lamp": True}
+    cir["nodes"]["LAMP-C"] = {"pos": [LAM_X, 10 + 1], "lamp": True}
     cir["bars"].append(("nodes/LAMP-C", "nodes/C{:02d}".format(LAM_X)))
 
-    cir["nodes"]["LAMP-D"] = {"pos": [LAM_X, 13 + 2], "lamp": True}
+    cir["nodes"]["LAMP-D"] = {"pos": [LAM_X, 13 + 1], "lamp": True}
     cir["bars"].append(("nodes/LAMP-D", "nodes/D{:02d}".format(LAM_X)))
 
     return cir

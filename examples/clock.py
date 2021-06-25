@@ -21,7 +21,7 @@ DRAW = True
 
 # run ripple simulation
 # ---------------------
-for step in range(200):
+for step in range(1):
     print(step)
     relays, capacitors, meshes_on_power = ris.simulate.one_step(
         relays=relays,
