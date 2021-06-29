@@ -32,7 +32,7 @@ cir = ris.logic.connect_vin_and_gnd_of_gates(cir, "XOR", "NOT")
 cir = ris.logic.connect_vin_and_gnd_of_gates(cir, "NOT", "UNITY")
 
 cir["nodes"]["V"] = {"pos": [0, 0], "name": "V"}
-cir["bars"].append(("nodes/V", "nodes/AND_in_V", "transparent"))
+cir["bars"].append(("nodes:V", "nodes:AND/in_V", "transparent"))
 
 circuit = ris.compile(circuit=cir)
 meshes, relays, capacitors = ris.compile_relay_meshes(circuit=circuit)

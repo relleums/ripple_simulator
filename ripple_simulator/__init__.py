@@ -8,7 +8,7 @@ from . import logic
 def copy_and_expand_node_names(nodes):
     out_nodes = {}
     for node_key in nodes:
-        out_nodes["nodes" + "/" + node_key] = nodes[node_key]
+        out_nodes["nodes" + ":" + node_key] = nodes[node_key]
     return out_nodes
 
 
@@ -16,7 +16,7 @@ def copy_and_expand_relay_node_names(relays):
     relay_nodes = {}
     for relay_key in relays:
         for relay_terminal_key in draw.RELAY_TERMINALS:
-            name = "relays" + "/" + relay_key + "/" + relay_terminal_key
+            name = "relays" + ":" + relay_key + "/" + relay_terminal_key
             relay = relays[relay_key]
             terminal_xy = draw.RELAY_TERMINALS[relay_terminal_key]
             rot = relay["rot"]
@@ -30,7 +30,7 @@ def copy_and_expand_relay_node_names(relays):
 def copy_and_expand_capacitor_names(capacitors):
     out_caps = {}
     for cap_key in capacitors:
-        out_caps["capacitors" + "/" + cap_key] = capacitors[cap_key]
+        out_caps["capacitors" + ":" + cap_key] = capacitors[cap_key]
     return out_caps
 
 
@@ -132,12 +132,12 @@ def compile_relay_meshes(circuit):
         relays[relay_key] = {}
         relays[relay_key]["state"] = simulate.STATE_FULLY_OFF
 
-        in_key = "relays" + "/" + relay_key + "/" + "in0"
-        in1_key = "relays" + "/" + relay_key + "/" + "in1"
-        outl_key = "relays" + "/" + relay_key + "/" + "ncl"
-        outu_key = "relays" + "/" + relay_key + "/" + "nop"
-        coil0_key = "relays" + "/" + relay_key + "/" + "coil0"
-        coil1_key = "relays" + "/" + relay_key + "/" + "coil1"
+        in_key = "relays" + ":" + relay_key + "/" + "in0"
+        in1_key = "relays" + ":" + relay_key + "/" + "in1"
+        outl_key = "relays" + ":" + relay_key + "/" + "ncl"
+        outu_key = "relays" + ":" + relay_key + "/" + "nop"
+        coil0_key = "relays" + ":" + relay_key + "/" + "coil0"
+        coil1_key = "relays" + ":" + relay_key + "/" + "coil1"
 
         for meshidx, mesh in enumerate(meshes):
             for node_key in mesh:
@@ -162,7 +162,7 @@ def compile_relay_meshes(circuit):
             "capacity"
         ]
 
-        caps_node_key = "capacitors/" + cap_key
+        caps_node_key = "capacitors:" + cap_key
         for meshidx, mesh in enumerate(meshes):
             for node_key in mesh:
                 if node_key == caps_node_key:

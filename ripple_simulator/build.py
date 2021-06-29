@@ -5,12 +5,12 @@ def trace(cir, start_node, trace_nodes, stop_node):
     for i in range(len(trace_nodes)):
         cir["nodes"][trace_nodes[i][0]] = {"pos": trace_nodes[i][1]}
 
-    cir["bars"].append((start_node, "nodes/" + trace_nodes[0][0]))
+    cir["bars"].append((start_node, "nodes:" + trace_nodes[0][0]))
     for i in range(len(trace_nodes) - 1):
         cir["bars"].append(
-            ("nodes/" + trace_nodes[i][0], "nodes/" + trace_nodes[i + 1][0],)
+            ("nodes:" + trace_nodes[i][0], "nodes:" + trace_nodes[i + 1][0],)
         )
-    cir["bars"].append(("nodes/" + trace_nodes[-1][0], stop_node))
+    cir["bars"].append(("nodes:" + trace_nodes[-1][0], stop_node))
     return cir
 
 
@@ -27,15 +27,15 @@ def bar_x(cir, pos, length, name, label=False):
         cir["nodes"][name + "{:02d}".format(posx)] = {"pos": [px + i + 1, py]}
 
     cir["bars"].append(
-        ("nodes/" + name, "nodes/" + name + "{:02d}".format(px + 1))
+        ("nodes:" + name, "nodes:" + name + "{:02d}".format(px + 1))
     )
 
     for i in range(length - 1):
         posx = px + i + 1
         cir["bars"].append(
             (
-                "nodes/" + name + "{:02d}".format(posx),
-                "nodes/" + name + "{:02d}".format(posx + 1),
+                "nodes:" + name + "{:02d}".format(posx),
+                "nodes:" + name + "{:02d}".format(posx + 1),
             )
         )
 
@@ -85,30 +85,30 @@ def add_group_name(circuit, name):
 
     out["relays"] = {}
     for key in circuit["relays"]:
-        out_key = name + "_" + key
+        out_key = name + "/" + key
         out["relays"][out_key] = dict(circuit["relays"][key])
 
     out["capacitors"] = {}
     for key in circuit["capacitors"]:
-        out_key = name + "_" + key
+        out_key = name + "/" + key
         out["capacitors"][out_key] = dict(circuit["capacitors"][key])
 
     out["nodes"] = {}
     for key in circuit["nodes"]:
-        out_key = name + "_" + key
+        out_key = name + "/" + key
         out["nodes"][out_key] = dict(circuit["nodes"][key])
 
     out["bars"] = []
     for bar in circuit["bars"]:
         n0 = bar[0]
         n1 = bar[1]
-        _0type = n0.split("/")[0]
-        _0path = "/".join(n0.split("/")[1:])
-        _0n = _0type + "/" + name + "_" + _0path
+        _0type = n0.split(":")[0]
+        _0path = "/".join(n0.split(":")[1:])
+        _0n = _0type + ":" + name + "/" + _0path
 
-        _1type = n1.split("/")[0]
-        _1path = "/".join(n1.split("/")[1:])
-        _1n = _1type + "/" + name + "_" + _1path
+        _1type = n1.split(":")[0]
+        _1path = "/".join(n1.split(":")[1:])
+        _1n = _1type + ":" + name + "/" + _1path
 
         if len(bar) == 3:
             out["bars"].append((_0n, _1n, bar[2]))

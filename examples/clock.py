@@ -21,7 +21,7 @@ DRAW = True
 
 # run ripple simulation
 # ---------------------
-for step in range(1):
+for step in range(66):
     print(step)
     relays, capacitors, meshes_on_power = ris.simulate.one_step(
         relays=relays,
@@ -55,11 +55,11 @@ for step in range(1):
 
     steps.append(step)
 
-    CLOCK_pegels.append(circuit_state["nodes"]["nodes/CLOCK_CLOCK"])
-    A_pegels.append(circuit_state["nodes"]["nodes/CLOCK_A"])
-    B_pegels.append(circuit_state["nodes"]["nodes/CLOCK_B"])
-    C_pegels.append(circuit_state["nodes"]["nodes/CLOCK_C"])
-    D_pegels.append(circuit_state["nodes"]["nodes/CLOCK_D"])
+    CLOCK_pegels.append(circuit_state["nodes"]["nodes:CLOCK/CLOCK"])
+    A_pegels.append(circuit_state["nodes"]["nodes:CLOCK/A"])
+    B_pegels.append(circuit_state["nodes"]["nodes:CLOCK/B"])
+    C_pegels.append(circuit_state["nodes"]["nodes:CLOCK/C"])
+    D_pegels.append(circuit_state["nodes"]["nodes:CLOCK/D"])
 
 """
 plt.plot(steps, CLOCK_pegels, "k")

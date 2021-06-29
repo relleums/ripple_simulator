@@ -381,7 +381,7 @@ def add_curcuit(dwg, circuit, circuit_state):
             state=circuit_state["capacitors"][cap_key],
             capacity=circuit["capacitors"][cap_key]["capacity"],
         )
-        cap_node_key = "capacitors" + "/" + cap_key
+        cap_node_key = "capacitors" + ":" + cap_key
         if len(cir["nodes"][cap_node_key]["bars"]) > 0:
             add_node(
                 dwg=dwg,
@@ -393,9 +393,9 @@ def add_curcuit(dwg, circuit, circuit_state):
     for relay_key in cir["relays"]:
         relay = cir["relays"][relay_key]
 
-        in_state = circuit_state["nodes"]["relays/" + relay_key + "/in0"]
-        ou_state = circuit_state["nodes"]["relays/" + relay_key + "/nop"]
-        ol_state = circuit_state["nodes"]["relays/" + relay_key + "/ncl"]
+        in_state = circuit_state["nodes"]["relays:" + relay_key + "/in0"]
+        ou_state = circuit_state["nodes"]["relays:" + relay_key + "/nop"]
+        ol_state = circuit_state["nodes"]["relays:" + relay_key + "/ncl"]
         add_relay(
             dwg=dwg,
             pos=relay["pos"],
@@ -407,7 +407,7 @@ def add_curcuit(dwg, circuit, circuit_state):
         )
 
         for terminal_key in RELAY_TERMINALS:
-            node_key = "relays" + "/" + relay_key + "/" + terminal_key
+            node_key = "relays" + ":" + relay_key + "/" + terminal_key
             if len(cir["nodes"][node_key]["bars"]) > 0:
                 add_node(
                     dwg=dwg,
