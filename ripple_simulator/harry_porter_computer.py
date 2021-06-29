@@ -3,6 +3,132 @@ from . import build
 from . import logic
 
 
+def register(num_bits=4, busses=["Data", "Address"]):
+    cir = build.empty_circuit()
+    dx = 7
+    Y = 5
+    BAR_LENGTH = dx*num_bits-2
+
+    # bit-latch-relays
+    for bit in range(num_bits):
+        cir["relays"]["BIT-{:02d}".format(bit)] = {
+            "pos": [bit * dx, Y + 3],
+            "rot": 1,
+        }
+        # latch
+        cir["bars"].append(
+            (
+                "relays/BIT-{:02d}/in0".format(bit),
+                "relays/BIT-{:02d}/coil0".format(bit),
+            )
+        )
+        # to hold
+        cir["bars"].append(
+            (
+                "relays/BIT-{:02d}/nop".format(bit),
+                "nodes/HOLD-{:02d}".format(5 + bit*dx),
+            )
+        )
+        # to gnd
+        cir["bars"].append(
+            (
+                "relays/BIT-{:02d}/coil1".format(bit),
+                "nodes/GND-BITS-{:02d}".format(4 + bit*dx),
+            )
+        )
+
+    cir = build.bar_x(
+        cir=cir, pos=[0, 6], length=BAR_LENGTH, name="GND-BITS-", label=False)
+    cir = build.bar_x(
+        cir=cir, pos=[0, 7], length=BAR_LENGTH, name="HOLD-", label=False)
+
+    # bit-indicator-lamps
+    for bit in range(num_bits):
+        lamp_name = "LAMP-{:02d}".format(bit)
+        cir["nodes"][lamp_name] = {"pos": [2 + bit * dx, 2], "lamp": True}
+        cir = build.trace(
+            cir,
+            "relays/BIT-{:02d}/in1".format(bit),
+            [("lamp-node-{:02d}".format(bit), [2 + bit * dx, 5])],
+            "nodes/" + lamp_name,
+        )
+
+    cir = build.bar_x(
+        cir=cir, pos=[0, 1], length=BAR_LENGTH, name="GND-LEDS", label=False)
+
+    dy = 5
+    for busidx, buskey in enumerate(busses):
+        bus_Y = 5 + Y + busidx*(dy)
+        print(bus_Y)
+
+        cir = build.bar_x(
+            cir=cir, pos=[0, bus_Y + 1],
+            length=BAR_LENGTH,
+            name="GND-{:s}-".format(buskey),
+            label=False
+        )
+
+        cir = build.bar_x(
+            cir=cir, pos=[0, bus_Y + 2],
+            length=BAR_LENGTH,
+            name="ENABLE-{:s}-".format(buskey),
+            label=False
+        )
+
+        # bus-enable-relays
+        for bit in range(num_bits):
+            cir["relays"]["{:s}-{:02d}".format(buskey, bit)] = {
+                "pos": [bit * dx, bus_Y + 3],
+                "rot": 1,
+            }
+            # to gnd
+            cir["bars"].append(
+                (
+                    "relays/{:s}-{:02d}/coil1".format(buskey, bit),
+                    "nodes/GND-{:s}-{:02d}".format(buskey, 4 + bit*dx),
+                )
+            )
+            # to enable
+            cir["bars"].append(
+                (
+                    "relays/{:s}-{:02d}/coil0".format(buskey, bit),
+                    "nodes/ENABLE-{:s}-{:02d}".format(buskey, 4 + bit*dx),
+                )
+            )
+            # to bit
+            if busidx == 0:
+                cir["bars"].append(
+                    (
+                        "relays/{:s}-{:02d}/in1".format(buskey, bit),
+                        "relays/BIT-{:02d}/in0".format(bit),
+                    )
+                )
+            else:
+                lower_buskey = busses[busidx - 1]
+                cir["bars"].append(
+                    (
+                        "relays/{:s}-{:02d}/in1".format(buskey, bit),
+                        "relays/{:s}-{:02d}/in0".format(lower_buskey, bit),
+                    )
+                )
+            busbitnodename = "{:s}-{:02d}".format(buskey, bit)
+            cir["nodes"][busbitnodename] = {
+                "pos": [bit * dx + 6, bus_Y + 3],
+                "name": busbitnodename
+            }
+
+
+
+    """
+    cir["relays"]["lamp-{:02d}".format(bit)] = {
+        "pos": [0, 3],
+        "rot": 1,
+    }
+    """
+    return cir
+
+
+
 def make_register(num_bits=4, ADRBUS=True):
     cir = build.empty_circuit()
 
