@@ -1,6 +1,10 @@
 import numpy as np
 import json
 import svgwrite
+import os
+import tempfile
+import shutil
+import subprocess
 from . import simulate
 
 
@@ -483,8 +487,16 @@ def add_curcuit(dwg, circuit, circuit_state):
 
 
 def draw_circuit(path, circuit, circuit_state):
-    dwg = svgwrite.Drawing(path, profile="tiny")
-    dwg.attribs["width"] = "1920px"
-    dwg.attribs["height"] = "1400px"
-    add_curcuit(dwg=dwg, circuit=circuit, circuit_state=circuit_state)
-    dwg.save()
+
+    with tempfile.TemporaryDirectory(prefix="ripple_simulator_") as tmp_dir:
+        tmp_svg_path = os.path.join(tmp_dir, "circuit.svg")
+        dwg = svgwrite.Drawing(tmp_svg_path, profile="tiny")
+        dwg.attribs["width"] = "1920px"
+        dwg.attribs["height"] = "1400px"
+        add_curcuit(dwg=dwg, circuit=circuit, circuit_state=circuit_state)
+        dwg.save()
+
+        if os.path.splitext(path)[1] == ".svg":
+            shutil.move(tmp_svg_path, path)
+        else:
+            subprocess.call(["convert", tmp_svg_path, path,])
