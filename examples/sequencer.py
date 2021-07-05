@@ -2,21 +2,31 @@ import ripple_simulator as ris
 import os
 import subprocess
 
-seq = ris.harry_porter_computer.make_sequencer(num_steps=8)
-seq = ris.build.add_group_name(circuit=seq, name="SEQUENCER")
-seq = ris.build.translate(circuit=seq, pos=[0, 0])
+cir_seqA = ris.harry_porter_computer.make_sequencer(labels_right=False)
+cir_seqA = ris.build.add_group_name(circuit=cir_seqA, name="SEQ-A")
+cir_seqA = ris.build.translate(circuit=cir_seqA, pos=[0, 0])
 
-seqs = ris.build.merge_circuits([seq])
+cir_seqB = ris.harry_porter_computer.make_sequencer(labels_left=False)
+cir_seqB = ris.build.add_group_name(circuit=cir_seqB, name="SEQ-B")
+cir_seqB = ris.build.translate(circuit=cir_seqB, pos=[20, 0])
 
-seed_mesh_idx = 0
-circuit = ris.compile(circuit=seqs)
+cir = ris.build.merge_circuits([
+    cir_seqA,
+    cir_seqB
+])
+
+circuit = ris.compile(circuit=cir)
 meshes, relays, capacitors = ris.compile_relay_meshes(circuit=circuit)
+seed_mesh_idx = 4
+
+steps = []
 
 DRAW = True
 
 # run ripple simulation
 # ---------------------
-for step in range(2):
+for step in range(1):
+    print(step)
     relays, capacitors, meshes_on_power = ris.simulate.one_step(
         relays=relays,
         capacitors=capacitors,
@@ -32,17 +42,10 @@ for step in range(2):
     )
 
     if DRAW:
-        # if not os.path.exists("test_{:06d}.jpg".format(step)):
+        # if not os.path.exists("clock_{:06d}.jpg".format(step)):
         ris.draw.draw_circuit(
-            path="seq_{:06d}.svg".format(step),
+            path="sequencer_{:06d}.jpg".format(step),
             circuit=circuit,
             circuit_state=circuit_state,
         )
-        subprocess.call(
-            [
-                "convert",
-                "seq_{:06d}.svg".format(step),
-                "seq_{:06d}.jpg".format(step),
-            ]
-        )
-        subprocess.call(["rm", "seq_{:06d}.svg".format(step)])
+    steps.append(step)

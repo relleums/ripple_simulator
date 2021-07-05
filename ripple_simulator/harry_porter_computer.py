@@ -665,45 +665,314 @@ def make_clock(periode):
     return cir
 
 
-def make_sequencer(num_steps):
+def make_sequencer(labels_left=True, labels_right=True, abort_latch=True):
+    """
+    motivated by Paul Law
+    """
     cir = build.empty_circuit()
 
-    cir["nodes"]["V"] = {"pos": [0, 0], "name": "V"}
-    cir["nodes"]["GND"] = {"pos": [0, 3], "name": "GND"}
+    odd = 0
 
-    cir["nodes"]["CLOCK"] = {"pos": [0, 4], "name": "CLOCK"}
+    sy = 2
+    dy = 7
 
-    cir["nodes"]["ANC"] = {"pos": [8, 6], "name": "ANC"}
-    cir["nodes"]["UNC"] = {"pos": [5, 6], "name": "UNC"}
+    sx = 2
+    dx = 5
 
-    cir["relays"]["clocker"] = {"pos": [5, 0], "rot": 0}
+    cir["relays"]["ODD-0"] = {"pos": [sx + 0*dx, sy + 0*dy], "rot": 0}
+    cir["relays"]["ODD-1"] = {"pos": [sx + 0*dx, sy + 1*dy], "rot": 0}
+    cir["relays"]["ODD-2"] = {"pos": [sx + 0*dx, sy + 2*dy], "rot": 0}
+    cir["relays"]["ODD-3"] = {"pos": [sx + 0*dx, sy + 3*dy], "rot": 0}
 
-    cir["bars"].append(("relays:clocker/in0", "nodes:V"))
-    cir["bars"].append(("relays:clocker/coil0", "nodes:CLOCK"))
+    even = odd + 1
 
-    cir["bars"].append(("relays:clocker/nop", "nodes:UNC"))
-    cir["bars"].append(("relays:clocker/ncl", "nodes:ANC"))
+    cir["relays"]["EVE-0"] = {"pos": [sx + 2*dx, sy + 0*dy], "rot": 0}
+    cir["relays"]["EVE-1"] = {"pos": [sx + 2*dx, sy + 1*dy], "rot": 0}
+    cir["relays"]["EVE-2"] = {"pos": [sx + 2*dx, sy + 2*dy], "rot": 0}
+    cir["relays"]["EVE-3"] = {"pos": [sx + 2*dx, sy + 3*dy], "rot": 0}
 
-    cir["nodes"]["RESET"] = {"pos": [0, 14], "name": "RESET"}
+    cir["relays"]["TICKTOCK".format(odd)] = {"pos": [sx + 1*dx, sy + 2*dy + 2], "rot": 0}
 
-    for t in range(num_steps):
-        rname = "T{:02d}".format(t)
-        cir["relays"][rname] = {"pos": [5 + 7 * t, 15], "rot": 1}
-        cir["bars"].append(
-            ("relays:" + rname + "/coil0", "relays:" + rname + "/in0")
+    Z_y = sy + 27
+    Y_y = sy - 2
+    X_y = sy - 1
+    GND_y = sy + 28
+    V_y = sy
+    CLOCK_y = sy + 29
+    cir["nodes"]["Z_left"] = {"pos": [sx - 2, Z_y]}
+    cir["nodes"]["Z_right"] = {"pos": [4*dx -2, Z_y]}
+
+    cir["nodes"]["Y_left"] = {"pos": [sx - 2, Y_y]}
+    cir["nodes"]["Y_right"] = {"pos": [4*dx -2, Y_y]}
+
+    cir["nodes"]["X_left"] = {"pos": [sx - 2, X_y]}
+    cir["nodes"]["X_right"] = {"pos": [4*dx -2, X_y]}
+
+    cir["nodes"]["GND_left"] = {"pos": [sx - 2, GND_y]}
+    cir["nodes"]["GND_right"] = {"pos": [4*dx -2, GND_y]}
+
+    cir["nodes"]["V_left"] = {"pos": [sx - 2, V_y]}
+    cir["nodes"]["V_right"] = {"pos": [4*dx -2, V_y]}
+
+    cir["nodes"]["CLOCK_left"] = {"pos": [sx - 2, CLOCK_y]}
+    cir["nodes"]["CLOCK_right"] = {"pos": [4*dx -2, CLOCK_y]}
+
+    if labels_left:
+        cir["nodes"]["Z_left"]["name"] = "Z_left"
+        cir["nodes"]["Y_left"]["name"] = "Y_left"
+        cir["nodes"]["X_left"]["name"] = "X_left"
+        cir["nodes"]["GND_left"]["name"] = "GND_left"
+        cir["nodes"]["V_left"]["name"] = "V_left"
+        cir["nodes"]["CLOCK_left"]["name"] = "CLOCK_left"
+    if labels_right:
+        cir["nodes"]["Z_right"]["name"] = "Z_right"
+        cir["nodes"]["Y_right"]["name"] = "Y_right"
+        cir["nodes"]["X_right"]["name"] = "X_right"
+        cir["nodes"]["GND_right"]["name"] = "GND_right"
+        cir["nodes"]["V_right"]["name"] = "V_right"
+        cir["nodes"]["CLOCK_right"]["name"] = "CLOCK_right"
+
+    # tick-tock-clock-divider
+    cir["bars"].append((
+        "relays:TICKTOCK/nop",
+        "relays:ODD-3/in1",
+    ))
+    cir["bars"].append((
+        "relays:TICKTOCK/ncl",
+        "relays:EVE-3/in0",
+    ))
+
+    # GND
+    # ===
+
+    # odd GND
+    cir["nodes"]["GND_odd_4"] = {"pos": [sx + 2, GND_y]}
+    for ii in range(4):
+        rr = 3 - ii
+        cir = build.trace(
+            cir,
+            "nodes:GND_odd_{:d}".format(rr + 1),
+            [("GND_odd_{:d}".format(rr), [sx+2, sy + rr*dy + 4])],
+            "relays:ODD-{:d}/coil1".format(rr),
         )
-        cir["nodes"][rname + "_sel"] = {"pos": [10 + 7 * t, 14]}
-        cir["bars"].append(
-            ("relays:" + rname + "/nop", "nodes:" + rname + "_sel")
+
+    # even GND
+    cir["nodes"]["GND_even_4"] = {"pos": [sx+2*dx + 2, GND_y]}
+    for ii in range(4):
+        rr = 3 - ii
+        cir = build.trace(
+            cir,
+            "nodes:GND_even_{:d}".format(rr + 1),
+            [("GND_even_{:d}".format(rr), [sx+2*dx+2, sy + rr*dy + 4])],
+            "relays:EVE-{:d}/coil1".format(rr),
         )
 
-    for t in range(num_steps - 1):
-        rname = "T{:02d}".format(t)
-        next_rname = "T{:02d}".format(t + 1)
-        cir["bars"].append(
-            ("nodes:" + rname + "_sel", "nodes:" + next_rname + "_sel")
-        )
+    # tick-tock GND
+    cir["nodes"]["GND_tick_tock_4"] = {"pos": [sx+1*dx + 2, GND_y]}
+    cir = build.trace(
+        cir,
+        "nodes:GND_tick_tock_4",
+        [("GND_tick_tock_3", [sx+1*dx+2, sy + 20])],
+        "relays:TICKTOCK/coil1".format(odd),
+    )
 
-    cir["bars"].append(("nodes:RESET", "nodes:T00_sel"))
+    # GND bus
+    cir["bars"].append(("nodes:GND_left", "nodes:GND_odd_4"))
+    cir["bars"].append(("nodes:GND_odd_4", "nodes:GND_tick_tock_4"))
+    cir["bars"].append(("nodes:GND_tick_tock_4", "nodes:GND_even_4"))
+    cir["bars"].append(("nodes:GND_even_4", "nodes:GND_right"))
+
+    # V
+    # =
+
+    # V bus
+    cir["bars"].append(("nodes:V_left", "relays:ODD-0/in0"))
+    cir["bars"].append(("relays:ODD-0/in1", "relays:EVE-0/in0"))
+    cir["bars"].append(("nodes:V_left", "relays:ODD-0/in0"))
+    cir["bars"].append(("nodes:V_right", "relays:EVE-0/in1"))
+
+    # V tick-tock
+    cir = build.trace(
+        cir,
+        "relays:EVE-0/in0",
+        [
+            ("tt1", [sx + 10, sy +3]),
+            ("tt0", [sx + 8, sy +3]),
+        ],
+        "relays:TICKTOCK/in1",
+    )
+
+    # CLOCK
+    # =====
+    cir["nodes"]["CLOCK_1"] = {"pos": [sx+1*dx + 1, CLOCK_y]}
+    cir = build.trace(
+        cir,
+        "nodes:CLOCK_1".format(even),
+        [("CLOCK_2", [sx+1*dx + 1, sy + 20])],
+        "relays:TICKTOCK/coil0",
+    )
+
+    # CLOCK bus
+    cir["bars"].append(("nodes:CLOCK_left", "nodes:CLOCK_1"))
+    cir["bars"].append(("nodes:CLOCK_1", "nodes:CLOCK_right"))
+
+    # Z left
+    # ======
+    cir["nodes"]["Z_odd_4"] = {"pos": [sx+0*dx-1, Z_y]}
+    cir["bars"].append(("nodes:Z_left", "nodes:Z_odd_4"))
+
+    cir["nodes"]["Z_odd_3"] = {"pos": [sx+0*dx-1, sy + 3*dy + 4]}
+    cir["bars"].append(("nodes:Z_odd_4", "nodes:Z_odd_3"))
+    cir["bars"].append(("relays:ODD-3/coil0", "nodes:Z_odd_3"))
+
+    cir["nodes"]["Z_odd_2l"] = {"pos": [sx+0*dx-1, sy + 2*dy + 4 + 1]}
+    cir["bars"].append(("nodes:Z_odd_3", "nodes:Z_odd_2l"))
+    cir["bars"].append(("relays:ODD-2/nop", "nodes:Z_odd_2l"))
+
+    cir["nodes"]["Z_odd_2"] = {"pos": [sx+0*dx-1, sy + 2*dy + 4]}
+    cir["bars"].append(("nodes:Z_odd_2l", "nodes:Z_odd_2"))
+    cir["bars"].append(("relays:ODD-2/coil0", "nodes:Z_odd_2"))
+
+    cir["nodes"]["Z_odd_1"] = {"pos": [sx+0*dx-1, sy + 1*dy + 4]}
+    cir["bars"].append(("nodes:Z_odd_2", "nodes:Z_odd_1"))
+    cir["bars"].append(("relays:ODD-1/coil0", "nodes:Z_odd_1"))
+
+    cir["nodes"]["Z_odd_0"] = {"pos": [sx+0*dx-1, sy + 0*dy + 4]}
+    cir["bars"].append(("nodes:Z_odd_1", "nodes:Z_odd_0"))
+    cir["bars"].append(("relays:ODD-0/coil0", "nodes:Z_odd_0"))
+
+    # Inner
+    # =====
+
+    # odd
+    cir["nodes"]["I_odd_4"] = {"pos": [sx+0*dx+1, Z_y]}
+
+    cir["nodes"]["I_odd_3"] = {"pos": [sx+0*dx+1, sy + 3*dy + 5]}
+    cir["bars"].append(("nodes:I_odd_4", "nodes:I_odd_3"))
+    cir["bars"].append(("relays:ODD-3/nop", "nodes:I_odd_3"))
+
+    cir["nodes"]["I_odd_1"] = {"pos": [sx+0*dx+1, sy + 1*dy + 5]}
+    cir["bars"].append(("nodes:I_odd_3", "nodes:I_odd_1"))
+    cir["bars"].append(("relays:ODD-1/nop", "nodes:I_odd_1"))
+
+    cir["nodes"]["I_eve_4"] = {"pos": [sx+2*dx-1, Z_y]}
+    cir["bars"].append(("nodes:I_odd_4", "nodes:I_eve_4"))
+
+    # even
+    cir["nodes"]["I_eve_3"] = {"pos": [sx+2*dx-1, sy + 3*dy + 4]}
+    cir["bars"].append(("nodes:I_eve_4", "nodes:I_eve_3"))
+    cir["bars"].append(("relays:EVE-3/coil0", "nodes:I_eve_3"))
+
+    cir["nodes"]["I_eve_2l"] = {"pos": [sx+2*dx-1, sy + 2*dy + 4 + 1]}
+    cir["bars"].append(("nodes:I_eve_3", "nodes:I_eve_2l"))
+    cir["bars"].append(("relays:EVE-2/nop", "nodes:I_eve_2l"))
+
+    cir["nodes"]["I_eve_2"] = {"pos": [sx+2*dx-1, sy + 2*dy + 4]}
+    cir["bars"].append(("nodes:I_eve_2l", "nodes:I_eve_2"))
+    cir["bars"].append(("relays:EVE-2/coil0", "nodes:I_eve_2"))
+
+    cir["nodes"]["I_eve_1"] = {"pos": [sx+2*dx-1, sy + 1*dy + 4]}
+    cir["bars"].append(("nodes:I_eve_2", "nodes:I_eve_1"))
+    cir["bars"].append(("relays:EVE-1/coil0", "nodes:I_eve_1"))
+
+    cir["nodes"]["I_eve_0"] = {"pos": [sx+2*dx-1, sy + 0*dy + 4]}
+    cir["bars"].append(("nodes:I_eve_1", "nodes:I_eve_0"))
+    cir["bars"].append(("relays:EVE-0/coil0", "nodes:I_eve_0"))
+
+    # Z right
+    # =======
+    cir["nodes"]["Z_abort_zo"] = {"pos": [sx+15, Z_y]}
+    cir["nodes"]["Z_abort_zi"] = {"pos": [sx+14, Z_y]}
+    cir["bars"].append(("nodes:Z_abort_zo", "nodes:Z_right"))
+
+    if not abort_latch:
+        cir["bars"].append(("nodes:Z_abort_zo", "nodes:Z_abort_zi"))
+
+    cir["nodes"]["Z_eve_4"] = {"pos": [sx+2*dx+1, Z_y]}
+    cir["bars"].append(("nodes:Z_abort_zi", "nodes:Z_eve_4"))
+    cir["nodes"]["Z_eve_3"] = {"pos": [sx+2*dx+1, sy + 3*dy + 5]}
+    cir["bars"].append(("nodes:Z_eve_4", "nodes:Z_eve_3"))
+    cir["bars"].append(("relays:EVE-3/nop", "nodes:Z_eve_3"))
+
+    cir["nodes"]["Z_eve_1"] = {"pos": [sx+2*dx+1, sy + 1*dy + 5]}
+    cir["bars"].append(("nodes:Z_eve_3", "nodes:Z_eve_1"))
+    cir["bars"].append(("relays:EVE-1/nop", "nodes:Z_eve_1"))
+
+    # X left
+    # ======
+    cir = build.trace(
+        cir,
+        "nodes:X_left",
+        [
+            ("Xl_0", [sx + 1, X_y]),
+            ("Xl_1", [sx + 1, sy + 2]),
+            ("Xl_2", [sx + 4, sy + 2]),
+            ("Xl_3", [sx + 4, sy + 5]),
+        ],
+        "relays:ODD-0/ncl",
+    )
+
+    # X right
+    # =======
+    cir = build.trace(
+        cir,
+        "nodes:X_right",
+        [
+            ("Xr_0", [sx + 2, X_y]),
+            ("Xr_1", [sx + 2, sy + 1]),
+            ("Xr_2", [sx + 5, sy + 1]),
+            ("Xr_3", [sx + 5, sy + 6]),
+            ("Xr_4", [sx + 4, sy + 6]),
+            ("Xr_5", [sx + 4, sy + 2*dy + 5]),
+        ],
+        "relays:ODD-2/ncl",
+    )
+
+    # Y left
+    # ======
+    cir = build.trace(
+        cir,
+        "nodes:Y_left",
+        [
+            ("Yl_1", [sx - 2, Y_y]),
+            ("Yl_2", [sx + 11, Y_y]),
+            ("Yl_3", [sx + 11, sy + 3]),
+            ("Yl_4", [sx + 14, sy + 3]),
+            ("Yl_5", [sx + 14, sy + 5]),
+        ],
+        "relays:EVE-0/ncl",
+    )
+
+    # Y right
+    # =======
+    cir = build.trace(
+        cir,
+        "relays:EVE-2/in1",
+        [
+            ("Yr_0", [sx + 14, sy + 14]),
+            ("Yr_1", [sx + 14, sy + 6]),
+            ("Yr_3", [sx + 15, sy + 6]),
+            ("Yr_4", [sx + 15, sy + 2]),
+            ("Yr_5", [sx + 12, sy + 2]),
+            ("Yr_6", [sx + 12, Y_y]),
+        ],
+        "nodes:Y_right",
+    )
+
+    if abort_latch:
+
+        cir["relays"]["ABORT-0"] = {"pos": [sx + 5, sy + 30], "rot": 0}
+        cir["relays"]["ABORT-1"] = {"pos": [sx +10, sy + 30], "rot": 0}
+
+        cir["nodes"]["Z_abort_zo_1"] = {"pos": [sx+15, Z_y + 8]}
+        cir["nodes"]["Z_abort_zi_1"] = {"pos": [sx+14, Z_y + 3]}
+        cir["bars"].append(("nodes:Z_abort_zi", "nodes:Z_abort_zi_1"))
+        cir["bars"].append(("nodes:Z_abort_zi_1", "relays:ABORT-1/in1"))
+        cir["bars"].append(("nodes:Z_abort_zo", "nodes:Z_abort_zo_1"))
+        cir["bars"].append(("nodes:Z_abort_zo_1", "relays:ABORT-1/ncl"))
+
+
+
+
 
     return cir
