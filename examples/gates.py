@@ -60,15 +60,7 @@ for step in range(1):
     if DRAW:
         if not os.path.exists("gates_{:06d}.jpg".format(step)):
             ris.draw.draw_circuit(
-                path="gates_{:06d}.svg".format(step),
+                path="gates_{:06d}.jpg".format(step),
                 circuit=circuit,
                 circuit_state=circuit_state,
             )
-            subprocess.call(
-                [
-                    "convert",
-                    "gates_{:06d}.svg".format(step),
-                    "gates_{:06d}.jpg".format(step),
-                ]
-            )
-            subprocess.call(["rm", "gates_{:06d}.svg".format(step)])

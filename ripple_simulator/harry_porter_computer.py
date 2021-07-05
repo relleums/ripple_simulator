@@ -59,7 +59,6 @@ def register(num_bits=4, busses=["Data", "Address"]):
     dy = 5
     for busidx, buskey in enumerate(busses):
         bus_Y = 5 + Y + busidx*(dy)
-        print(bus_Y)
 
         cir = build.bar_x(
             cir=cir, pos=[0, bus_Y + 1],
@@ -117,14 +116,6 @@ def register(num_bits=4, busses=["Data", "Address"]):
                 "name": busbitnodename
             }
 
-
-
-    """
-    cir["relays"]["lamp-{:02d}".format(bit)] = {
-        "pos": [0, 3],
-        "rot": 1,
-    }
-    """
     return cir
 
 
