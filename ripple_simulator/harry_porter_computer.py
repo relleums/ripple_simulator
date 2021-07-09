@@ -690,6 +690,8 @@ def make_sequencer(labels_left=True, labels_right=True, abort_latch=True):
     GND_y = sy + 28
     V_y = sy
     CLOCK_y = sy + 29
+    RESET_y = sy + 37
+    Sminus1_y = sy + 36
     cir["nodes"]["Z_left"] = {"pos": [sx - 2, Z_y]}
     cir["nodes"]["Z_right"] = {"pos": [4*dx -2, Z_y]}
 
@@ -708,6 +710,13 @@ def make_sequencer(labels_left=True, labels_right=True, abort_latch=True):
     cir["nodes"]["CLOCK_left"] = {"pos": [sx - 2, CLOCK_y]}
     cir["nodes"]["CLOCK_right"] = {"pos": [4*dx -2, CLOCK_y]}
 
+    cir["nodes"]["RESET_left"] = {"pos": [sx - 2, RESET_y]}
+    cir["nodes"]["RESET_right"] = {"pos": [4*dx -2, RESET_y]}
+
+    cir["nodes"]["Sminus1_left"] = {"pos": [sx - 2, Sminus1_y]}
+    cir["nodes"]["Sminus1_right"] = {"pos": [4*dx -2, Sminus1_y]}
+
+
     if labels_left:
         cir["nodes"]["Z_left"]["name"] = "Z_left"
         cir["nodes"]["Y_left"]["name"] = "Y_left"
@@ -715,6 +724,8 @@ def make_sequencer(labels_left=True, labels_right=True, abort_latch=True):
         cir["nodes"]["GND_left"]["name"] = "GND_left"
         cir["nodes"]["V_left"]["name"] = "V_left"
         cir["nodes"]["CLOCK_left"]["name"] = "CLOCK_left"
+        cir["nodes"]["Sminus1_left"]["name"] = "Sminus1_right"
+        cir["nodes"]["RESET_left"]["name"] = "RESET_left"
     if labels_right:
         cir["nodes"]["Z_right"]["name"] = "Z_right"
         cir["nodes"]["Y_right"]["name"] = "Y_right"
@@ -722,6 +733,8 @@ def make_sequencer(labels_left=True, labels_right=True, abort_latch=True):
         cir["nodes"]["GND_right"]["name"] = "GND_right"
         cir["nodes"]["V_right"]["name"] = "V_right"
         cir["nodes"]["CLOCK_right"]["name"] = "CLOCK_right"
+        cir["nodes"]["Sminus1_right"]["name"] = "Sminus1_right"
+        cir["nodes"]["RESET_right"]["name"] = "RESET_right"
 
     # tick-tock-clock-divider
     cir["bars"].append((
@@ -951,9 +964,19 @@ def make_sequencer(labels_left=True, labels_right=True, abort_latch=True):
     )
 
     if abort_latch:
+        cir["nodes"]["RESET_down"] = {"pos": [sx+10, RESET_y]}
+        cir["bars"].append(("nodes:RESET_left", "nodes:RESET_down"))
+        cir["bars"].append(("nodes:RESET_down", "nodes:RESET_right"))
+
+        cir["nodes"]["Sminus1_down"] = {"pos": [sx+5, Sminus1_y]}
+        cir["bars"].append(("nodes:Sminus1_left", "nodes:Sminus1_down"))
+        cir["bars"].append(("nodes:Sminus1_down", "nodes:Sminus1_right"))
+
 
         cir["relays"]["ABORT-0"] = {"pos": [sx + 5, sy + 30], "rot": 0}
         cir["relays"]["ABORT-1"] = {"pos": [sx +10, sy + 30], "rot": 0}
+
+        cir["bars"].append(("relays:ABORT-1/nop", "nodes:RESET_down"))
 
         cir["nodes"]["Z_abort_zo_1"] = {"pos": [sx+15, Z_y + 8]}
         cir["nodes"]["Z_abort_zi_1"] = {"pos": [sx+14, Z_y + 3]}
@@ -962,8 +985,25 @@ def make_sequencer(labels_left=True, labels_right=True, abort_latch=True):
         cir["bars"].append(("nodes:Z_abort_zo", "nodes:Z_abort_zo_1"))
         cir["bars"].append(("nodes:Z_abort_zo_1", "relays:ABORT-1/ncl"))
 
+        cir["bars"].append(("relays:ABORT-0/nop", "nodes:Sminus1_down"))
 
+        # GND
+        # ---
+        cir["bars"].append(("relays:ABORT-0/coil1", "nodes:GND_odd_4"))
+        cir["bars"].append(("relays:ABORT-1/coil1", "nodes:GND_even_4"))
 
+        # latch
+        cir["bars"].append(("relays:ABORT-0/coil0", "relays:ABORT-0/in0"))
 
+        # ABORT-0 and ABORT-1 run in sync, and ABORT-0 is latched so:
+        cir = build.trace(
+            cir,
+            "relays:ABORT-0/in1",
+            [
+                ("abo_00", [sx + 9, sy + 30]),
+                ("abo_01", [sx + 9, sy + 34])
+            ],
+            "relays:ABORT-1/coil0",
+        )
 
     return cir
