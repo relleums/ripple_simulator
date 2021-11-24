@@ -4,7 +4,7 @@ import subprocess
 
 cir_clk = ris.harry_porter_computer.make_clock(periode=33)
 cir_clk = ris.build.add_group_name(circuit=cir_clk, name="CLOCK")
-cir_clk = ris.build.translate(circuit=cir_clk, pos=[0, 0])
+cir_clk = ris.build.translate(circuit=cir_clk, pos=[13, 1])
 
 circuit = ris.compile(circuit=cir_clk)
 meshes, relays, capacitors = ris.compile_relay_meshes(circuit=circuit)
@@ -21,7 +21,7 @@ DRAW = True
 
 # run ripple simulation
 # ---------------------
-for step in range(66):
+for step in range(3):
     print(step)
     relays, capacitors, meshes_on_power = ris.simulate.one_step(
         relays=relays,
