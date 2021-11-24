@@ -3,7 +3,7 @@ from . import build
 from . import logic
 
 
-def register(num_bits=4, busses=["Data", "Address"]):
+def register(num_bits=4, busses=["Data", "Address"], hold=True):
     cir = build.empty_circuit()
     dx = 7
     Y = 5
@@ -44,17 +44,14 @@ def register(num_bits=4, busses=["Data", "Address"]):
 
     # bit-indicator-lamps
     for bit in range(num_bits):
-        lamp_name = "LAMP-{:02d}".format(bit)
-        cir["nodes"][lamp_name] = {"pos": [2 + bit * dx, 2], "lamp": True}
+        lamp_name = "LED-{:02d}".format(bit)
+        cir["nodes"][lamp_name] = {"pos": [2 + bit * dx, 3], "lamp": True}
         cir = build.trace(
             cir,
             "relays:BIT-{:02d}/in1".format(bit),
-            [("lamp-node-{:02d}".format(bit), [2 + bit * dx, 5])],
+            [("led-node-{:02d}".format(bit), [0 + bit * dx, 3])],
             "nodes:" + lamp_name,
         )
-
-    cir = build.bar_x(
-        cir=cir, pos=[0, 1], length=BAR_LENGTH, name="GND-LEDS", label=False)
 
     dy = 5
     for busidx, buskey in enumerate(busses):
@@ -112,9 +109,53 @@ def register(num_bits=4, busses=["Data", "Address"]):
                 )
             busbitnodename = "{:s}-{:02d}".format(buskey, bit)
             cir["nodes"][busbitnodename] = {
-                "pos": [bit * dx + 6, bus_Y + 3],
-                "name": busbitnodename
+                "pos": [bit * dx + 5, bus_Y + 4],
+                #"name": busbitnodename,
+                "pin": True,
             }
+            cir["nodes"][busbitnodename+"-1"] = {
+                "pos": [bit * dx + 4, bus_Y + 4],
+                "pin": True,
+            }
+            cir["nodes"][busbitnodename+"-2"] = {
+                "pos": [bit * dx + 3, bus_Y + 4],
+                "pin": True,
+            }
+
+            cir["bars"].append(
+                (
+                    "nodes:" + busbitnodename,
+                    "relays:{:s}-{:02d}/nop".format(buskey, bit),
+                )
+            )
+            cir["bars"].append(
+                (
+                    "nodes:" + busbitnodename,
+                    "nodes:" + busbitnodename+"-1",
+                )
+            )
+            cir["bars"].append(
+                (
+                    "nodes:" + busbitnodename+"-1",
+                    "nodes:" + busbitnodename+"-2",
+                )
+            )
+
+    if hold:
+        cir["relays"]["HOLD"] = {
+            "pos": [(-1) * dx, Y + 3],
+            "rot": 1,
+        }
+        # hold line
+        cir["nodes"]["hold-hold"] = {"pos": [(-1) * dx + 0, Y + 2],}
+        cir["bars"].append(("relays:HOLD/in0", "nodes:hold-hold"))
+        cir["bars"].append(("nodes:hold-hold", "nodes:HOLD-"))
+
+        # gnd
+        cir["nodes"]["hold-gnd"] = {"pos": [(-1) * dx + 4, Y + 1],}
+        cir["bars"].append(("relays:HOLD/coil1", "nodes:hold-gnd"))
+        cir["bars"].append(("nodes:hold-gnd", "nodes:GND-BITS-"))
+
 
     return cir
 

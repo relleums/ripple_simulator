@@ -303,35 +303,44 @@ def add_node_name(dwg, pos, name):
 
 
 def add_node_lamp(dwg, pos=(0, 0), stroke_width=2.0, stroke="black", power=0):
-    r = 1.0
+    r = 0.707
     cx = pos[0]
     cy = pos[1]
+
+    # outer circle
+    # ------------
     dwg.add(
         dwg.circle(
-            grid_xy(cx, cy),
+            grid_xy(cx + 0.5, cy),
             r * RM_PX,
             stroke=stroke,
             stroke_width=stroke_width,
-            fill="red" if power else "white",
+            fill="red" if power else "none",
         )
     )
+
     # cross
-    dwg.add(
-        dwg.line(
-            grid_xy(cx - r / np.sqrt(2), cy - r / np.sqrt(2)),
-            grid_xy(cx + r / np.sqrt(2), cy + r / np.sqrt(2)),
-            stroke=stroke,
-            stroke_width=stroke_width,
-        )
+    # -----
+    add_cross(
+        dwg=dwg,
+        pos=[0.5 + cx, cy],
+        r=r,
+        stroke_width=stroke_width,
+        stroke=stroke
     )
-    dwg.add(
-        dwg.line(
-            grid_xy(cx - r / np.sqrt(2), cy + r / np.sqrt(2)),
-            grid_xy(cx + r / np.sqrt(2), cy - r / np.sqrt(2)),
-            stroke=stroke,
-            stroke_width=stroke_width,
+
+    # pins in grid
+    # ------------
+    for ccxx in [cx, cx + 1]:
+        dwg.add(
+            dwg.circle(
+                grid_xy(ccxx, cy),
+                r * RM_PX * 0.1,
+                stroke=stroke,
+                stroke_width=stroke_width,
+                fill="none",
+            )
         )
-    )
 
 
 def add_node(
@@ -359,6 +368,78 @@ def add_node(
     )
     if name:
         dwg.add(dwg.text(name, grid_xy(pos[0], pos[1])))
+
+
+def add_node_pin_through(
+    dwg, pos=(0, 0), stroke_width=1.0, stroke="black", power=0
+):
+    x, y = pos
+    r = 0.4
+    if power:
+        add_cross(
+            dwg=dwg,
+            pos=pos,
+            r=r*1.2,
+            stroke_width=stroke_width*1.2,
+            stroke="red"
+        )
+    add_cross(
+        dwg=dwg,
+        pos=pos,
+        r=r,
+        stroke_width=stroke_width,
+        stroke=stroke
+    )
+    add_line(
+        dwg=dwg,
+        start=[x-r, y-r],
+        stop=[x+r, y-r],
+        stroke=stroke,
+        stroke_width=stroke_width
+    )
+    add_line(
+        dwg=dwg,
+        start=[x+r, y-r],
+        stop=[x+r, y+r],
+        stroke=stroke,
+        stroke_width=stroke_width
+    )
+    add_line(
+        dwg=dwg,
+        start=[x-r, y-r],
+        stop=[x-r, y+r],
+        stroke=stroke,
+        stroke_width=stroke_width
+    )
+    add_line(
+        dwg=dwg,
+        start=[x-r, y+r],
+        stop=[x+r, y+r],
+        stroke=stroke,
+        stroke_width=stroke_width
+    )
+
+
+def add_cross(
+    dwg, pos=(0, 0), r=1.0, stroke_width=1.0, stroke="black",
+):
+    x, y = pos
+    dwg.add(
+        dwg.line(
+            grid_xy(x - r / np.sqrt(2), y - r / np.sqrt(2)),
+            grid_xy(x + r / np.sqrt(2), y + r / np.sqrt(2)),
+            stroke=stroke,
+            stroke_width=stroke_width,
+        )
+    )
+    dwg.add(
+        dwg.line(
+            grid_xy(x - r / np.sqrt(2), y + r / np.sqrt(2)),
+            grid_xy(x + r / np.sqrt(2), y - r / np.sqrt(2)),
+            stroke=stroke,
+            stroke_width=stroke_width,
+        )
+    )
 
 
 def add_label_node(dwg, pos, name, stroke_width=2.0, stroke="black"):
@@ -471,6 +552,12 @@ def add_curcuit(dwg, circuit, circuit_state):
                 pos=cir["nodes"][node_key]["pos"],
                 power=circuit_state["nodes"][node_key],
                 name=None,
+            )
+        if "pin" in cir["nodes"][node_key]:
+            add_node_pin_through(
+                dwg=dwg,
+                pos=cir["nodes"][node_key]["pos"],
+                power=circuit_state["nodes"][node_key],
             )
         if "name" in cir["nodes"][node_key]:
             add_label_node(

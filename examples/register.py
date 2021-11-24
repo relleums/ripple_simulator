@@ -2,28 +2,13 @@ import ripple_simulator as ris
 import os
 import subprocess
 
-"""
-reg_A = ris.harry_porter_computer.make_register(num_bits=8, ADRBUS=False)
-reg_A = ris.build.add_group_name(circuit=reg_A, name="REG-A")
-reg_A = ris.build.translate(circuit=reg_A, pos=[0, -1])
-
-reg_B = ris.harry_porter_computer.make_register(num_bits=8, ADRBUS=False)
-reg_B = ris.build.add_group_name(circuit=reg_B, name="REG-B")
-reg_B = ris.build.translate(circuit=reg_B, pos=[0, 14])
-
-reg_C = ris.harry_porter_computer.make_register(num_bits=8, ADRBUS=False)
-reg_C = ris.build.add_group_name(circuit=reg_C, name="REG-C")
-reg_C = ris.build.translate(circuit=reg_C, pos=[0, 29])
-
-regs = ris.build.merge_circuits([reg_A, reg_B, reg_C])
-"""
-reg_A = ris.harry_porter_computer.register(num_bits=8, busses=["DAT", "ADR"])
+reg_A = ris.harry_porter_computer.register(num_bits=4, busses=["DAT", "ADR"])
 reg_A = ris.build.add_group_name(circuit=reg_A, name="REGISTER-A")
-reg_A = ris.build.translate(circuit=reg_A, pos=[4, 0])
+reg_A = ris.build.translate(circuit=reg_A, pos=[7, -2])
 
-reg_B = ris.harry_porter_computer.register(num_bits=8, busses=["DAT", "ADR"])
+reg_B = ris.harry_porter_computer.register(num_bits=4, busses=["DAT", "ADR"])
 reg_B = ris.build.add_group_name(circuit=reg_B, name="REGISTER-B")
-reg_B = ris.build.translate(circuit=reg_B, pos=[4, 20])
+reg_B = ris.build.translate(circuit=reg_B, pos=[7, 18])
 
 regs = ris.build.merge_circuits([reg_A, reg_B])
 
