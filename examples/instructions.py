@@ -1,4 +1,5 @@
 import numpy as np
+import io
 
 def zeros(shape):
     return np.zeros(shape=shape, dtype=np.uint8)
@@ -8,25 +9,27 @@ BITS = 16
 
 state = {
     "registers": {
-        "A": {"bits": zeros(BITS), "bus": {"DAT": 0,}},
-        "B": {"bits": zeros(BITS), "bus": {"DAT": 0, "ALX": 0}},
-        "C": {"bits": zeros(BITS), "bus": {"DAT": 0, "ALY": 0}},
-        "D": {"bits": zeros(BITS), "bus": {"DAT": 0,}},
-        "Z": {"bits": zeros(BITS), "bus": {"DAT": 0, "ADR": 0, "ALZ": 0}},
-        "T": {"bits": zeros(BITS), "bus": {"DAT": 0, "ADR": 0, "ALZ": 0}},
-        "M": {"bits": zeros(BITS), "bus": {"DAT": 0, "ADR": 0}},
-        "X": {"bits": zeros(BITS), "bus": {"DAT": 0, "ADR": 0}},
-        "J": {"bits": zeros(BITS), "bus": {"DAT": 0, "ADR": 0}},
-        "I": {"bits": zeros(BITS), "bus": {"DAT": 0,}},
-        "P": {"bits": zeros(BITS), "bus": {"ADR": 0, "ALZ": 0}},
+        "ALX": {"reg": "...", "bits": zeros(BITS), "bus": {"DAT": 0, "ADR": 0}},
+        "ALY": {"reg": "...", "bits": zeros(BITS), "bus": {"DAT": 0, "ADR": 0}},
+        "ALZ": {"reg": "...", "bits": zeros(BITS), "bus": {"DAT": 0, "ADR": 0, "ALZ": 0}},
+
+        "A__": {"reg": "000", "bits": zeros(BITS), "bus": {"DAT": 0, "ADR": 0, "SH1": 0}},
+        "B__": {"reg": "001", "bits": zeros(BITS), "bus": {"DAT": 0, "ADR": 0, "SH2": 0}},
+        "C__": {"reg": "010", "bits": zeros(BITS), "bus": {"DAT": 0, "ADR": 0, "SH1": 0}},
+        "D__": {"reg": "011", "bits": zeros(BITS), "bus": {"DAT": 0, "ADR": 0, "SH2": 0}},
+
+        "M__": {"reg": "100", "bits": zeros(BITS), "bus": {"DAT": 0, "ADR": 0}},
+        "X__": {"reg": "101", "bits": zeros(BITS), "bus": {"DAT": 0, "ADR": 0}},
+        "J__": {"reg": "110", "bits": zeros(BITS), "bus": {"DAT": 0, "ADR": 0}},
+        "P__": {"reg": "111", "bits": zeros(BITS), "bus": {"DAT": 0, "ADR": 0}},
+
+        "I__": {"reg": "...", "bits": zeros(BITS), "bus": {"DAT": 0,}},
+        "MMA": {"reg": "...", "bits": zeros(BITS), "bus": {"ADR": 0,}},
+        "MMD": {"reg": "...", "bits": zeros(BITS), "bus": {"DAT": 0,}},
     },
-    "alu": {
-        "flags": {"sum": 0, "carry": 0, "zero": 0},
-        "bits": zeros(BITS),
-    },
+    "alu": {"flags": {"sign": 0, "carry": 0, "zero": 0}, "bits": zeros(BITS),},
     "memory": {
-        "bits": zeros(shape=(2 ** BITS, BITS)),
-        "bus": {"DATA": 0},
+        "bits": zeros(shape=(512, BITS)),
     },
     "clock": {
         "halt": 1,
@@ -34,106 +37,184 @@ state = {
     },
 }
 
+ALU_FFF = {
+    "NOTX": "0000",
+    "AND_": "0001",
+    "NAND": "0010",
+    "OR__": "0011",
+
+    "NOR_": "0100",
+    "XNOR": "0110",
+    "INCX": "0111",
+    "ADD_": "1010",
+
+    "-y*_": "1001",
+    "X-1_": "1000",
+    "X-Y_": "1011",
+
+    "SLx_": "1100",
+    "SRx_": "1101",
+    "SCLx": "1110",
+    "SCRx": "1111",
+}
+
 FETCH_INCREMENT_CTRLSEQ = {
-    #           0000 0000 0011 1111 1111 2222
-    #           0123 4567 8901 2345 6789 0123
-    "P___ADR": "_~~~ ____ ",
-    "MEM___R": "_~~~ ____ ",
-    "I___CLR": "_~__ ____ ",
-    "I___DAT": "__~_ ____ ",
-    "ADR_ALY": "_~~~ ____ ",
-    "ALU_INC": "_~~~ ____ ",
-    "Z___CLR": "_~__ ____ ",
-    "Z___ALZ": "__~_ ____ ",
+    #            0000 0000 0011 1111 1111 2222
+    #            0123 4567 8901 2345 6789 0123
+    "ALY_CLR": " ~___ ____ ", # Copy P into ALY and MMA
+    "MMA_CLR": " ~___ ____ ",
+    "P___ADR": " _~__ ____ ",
+    "ALY_ADR": " _~__ ____ ",
+    "MMA_ADR": " _~__ ____ ",
+    "MEM___R": " _~~~ ____ ", # Fetch
+    "I___CLR": " __~_ ____ ",
+    "MMD_DAT": " ___~ ____ ",
+    "I___DAT": " ___~ ____ ",
+    "ALU_INC": " _~~~ ____ ", # increment
+    "ALZ_CLR": " _~__ ____ ", # save P+1 in ALZ
+    "ALZ_ALZ": " __~_ ____ ",
+    "P___CLR": " __~_ ____ ", # Copy P+1 into P
+    "ALZ_ADR": " ___~ ____ ",
+    "P___ADR": " ___~ ____ ",
 
-    "Z___ALZ": "____ _~__ ", # if not GOTO: MOVE Z to P via ALZ
-    "P___CLR": "____ ~___ ",
-    "P___ALZ": "____ _~__ ",
+    "I___INT": " ___~ ~~~~ ",
 
-    "I___INT": "___~ ~~~~ ~~~~",
-
-    # MOVE-DAT A B
-    # 000'.dddd.'''b.ssss
+    # COPY-DAT ALZ B
+    # 0000.ddds.ss--.----
     "B___CLR": "____ ~___ ",
     "B___DAT": "____ _~__ ",
-    "A___DAT": "____ _~__ ",
+    "ALZ_DAT": "____ _~__ ",
+    "C___CLR": "____ ~___ ",
+    "C___DAT": "____ _~__ ",
+    "M___DAT": "____ _~__ ",
 
-    # SET A B
-    # 001d.vvvv.vvvv.vvvv
+    # SET B C
+    # 0001.dvvv.vvvv.vvvv
+    "B___CLR": "____ ~___ ",
+    "B___VVV": "____ _~~~ ",
 
-    # MEM R A
-    # 010'.''''.''''.rrrr
-    "M___ADR": "____ _~~~ ",
-    "MEM___R": "____ _~~~ ",
-    "A___CLR": "____ _~__ ",
-    "A___DAT": "____ __~_ ",
+    # MEM READ A
+    # 0010.dd''.''''.''''
+    "MMA_CLR": " ____ ~___ ", # Copy M into MEM-ADR-register
+    "M___ADR": " ____ _~__ ",
+    "MMA_ADR": " ____ _~__ ",
+    "MEM____": " ____ __~~ ", # Fetch
+    "A___CLR": " ____ __~_ ",
+    "MMD_DAT": " ____ ___~ ", # Copy MEM-DAT into destination (A)
+    "A___DAT": " ____ ___~ ",
 
-    # MEM W A
-    # 011'.''''.''''.rrrr
-    "M___ADR": "____ _~~~ ",
-    "MEM___W": "____ _~~_ ",
-    "A___DAT": "____ _~~~ ",
+    # MEM WRITE A
+    # 0011.''''.''''.'ddd
+    "MMA_CLR": " ____ ~___ ", # Copy M into MEM-ADR-register
+    "M___ADR": " ____ _~__ ",
+    "MMA_ADR": " ____ _~__ ",
+    "MMD_CLR": " ____ ~___ ",
+    "A___DAT": " ____ _~__ ",
+    "MMD_DAT": " ____ _~__ ",
+    "MEM___W": " ____ __~~ ",
 
     # ALU
-    # 100d.ffff.ffff.ffff
-    # A = B + C
-    "B___ALX": "____ _~~~ ",
-    "C___ALY": "____ _~~~ ",
-    "ALU_ADD": "____ _~~~ ",
-    "T___CLR": "____ _~__ ",
-    "T___ALZ": "____ __~_ ",
-    "A___CLR": "____ _~__ ",
-    "T___DAT": "____ __~_ ",
-    "A___DAT": "____ __~_ ",
-
-    # INC X
-    # 110'.''''.''''.''''
-    "X___ADR": "____ _~~~ ____ ",
-    "ADR_ALY": "____ _~~~ ____ ",
-    "ALU_ADD": "____ _~~~ ____ ",
-    "T___CLR": "____ _~__ ____ ",
-    "T___ALZ": "____ __~_ ____ ",
-    "T___DAT": "____ ____ _~__ ",
-    "X___CLR": "____ ____ ~___ ",
-    "X___DAT": "____ ____ _~__ ",
+    # 0100.xxyy.zzZ'.ffff
+    # 0100.bbcc.dd1'.ffff
+    # If 'Z' == 0, do not copy output to zz. Use for example to test: A == B
+    # D = B + C
+    "ALX_CLR": "____ ~___ ", # Copy B into ALX via DAT
+    "B___DAT": "____ _~__ ",
+    "ALX_DAT": "____ _~__ ",
+    "ALY_CLR": "____ ~___ ", # Copy C into ALY via ADR
+    "C___ADR": "____ _~__ ",
+    "ALY_ADR": "____ _~__ ",
+    "ALU_FFF": "____ _~~~ ",
+    "ALZ_CLR": "____ _~__ ",
+    "ALZ_ALZ": "____ __~_ ", # Result in ALZ
+    "D___CLR": "____ __~_ ",
+    "ALZ_DAT": "____ ___~ ", # Copy ALZ into D via DAT
+    "D___DAT": "____ ___~ ",
 
     # GOTO
-    # 101d.sczn.x'''.''''
-    "Z___ADR": "____ _~~~ ____ ", # Z contains P+1, load MEM into M
-    "MEM___R": "____ _~~~ ____ ",
-    "M___CLR": "____ _~__ ____ ", # M or J
-    "M___DAT": "____ __~_ ____ ", # M or J
-    "ADR_ALY": "____ _~~~ ____ ",
-    "ALU_INC": "____ _~~~ ____ ",
-    "T___CLR": "____ _~__ ____ ",
-    "T___ALZ": "____ __~_ ____ ", # T contains P+2
+    # 0110.''''.''''.sczn
+    "ALY_CLR": " ____ ~___ ", # Copy P+1 into ALY and MMA
+    "MMA_CLR": " ____ ~___ ",
+    "P___ADR": " ____ _~__ ",
+    "ALY_ADR": " ____ _~__ ",
+    "MMA_ADR": " ____ _~__ ",
+    "MEM___R": " ____ _~~~ ", # Fetch
+    "J___CLR": " ____ __~_ ", # M or J
+    "MMD_DAT": " ____ ___~ ",
+    "J___DAT": " ____ ___~ ", # M or J
+    "ALU_INC": " ____ _~~~ ", # increment
+    "ALZ_CLR": " ____ _~__ ", # save P+2 in ALZ
+    "ALZ_ALZ": " ____ __~_ ",
+    "ALZ_ADR": " ____ ___~ ",
 
-    "T___DAT": "____ ____ _~__ ", # MOVE T (P+2) to X via DAT
-    "X___CLR": "____ ____ ~___ ", #
-    "X___DAT": "____ ____ _~__ ", #
+    "X___CLR": " ____ __~_ ", # Copy P+2 into X
+    "X___ADR": " ____ ___~ ",
 
-    "J___ADR": "____ ____ _~__ ", # MOVE J to P
-    "P___CLR": "____ ____ ~___ ", #
-    "P___ADR": "____ ____ _~__ ", #
+    "P___CLR": " ____ __~_ ", # Copy P+2 into P (optional)
+    "P___ADR": " ____ ___~ ",
     #    ^
     # OR |
     #    V
-    "T___ADR": "____ ____ _~__ ", # MOVE T (P+2) to P
-    "P___CLR": "____ ____ ~___ ", #
-    "P___ADR": "____ ____ _~__ ", #
+    "P___CLR": " ____ __~_ ", # Copy J into P
+    "P___DAT": " ____ ___~ ",
+    "J___DAT": " ____ ___~ ",
+
+    # INC X
+    # 0111.''''.''''.''''
+    "ALX_CLR": "____ ~___ ", # Copy X into ALX via ADR
+    "X___ADR": "____ _~__ ",
+    "ALX_ADR": "____ _~__ ",
+    "ALU_INC": "____ _~~~ ", # INC
+    "ALZ_CLR": "____ _~__ ",
+    "ALZ_ALZ": "____ __~_ ", # Result in ALZ
+    "X___CLR": "____ __~_ ",
+    "ALZ_ADR": "____ ___~ ", # COPY ALZ into X
+    "X___ADR": "____ ___~ ",
+
+
+    # SHR AB (for multiplication and division)
+    # 1000.cr''.''''.''''
+    # if 'c', cyclic
+    # if 'r': shift-right CD <- AB
+    # else:   shift-left  AB <- CD
+    "C___CLR": "____ ~___ ", # Copy-shift-left A <- C and B <- D
+    "D___CLR": "____ ~___ ",
+    # OR
+    "A___CLR": "____ ~___ ", # Copy-shift-right C <- A and D <- B
+    "B___CLR": "____ ~___ ",
+
+    "A___SH1": "____ _~__ ",
+    "C___SH1": "____ _~__ ",
+    "B___SH2": "____ _~__ ",
+    "D___SH2": "____ _~__ ",
+
+    "A___CLR": "____ __~_ ",
+    "B___CLR": "____ __~_ ",
+    # OR
+    "C___CLR": "____ __~_ ",
+    "D___CLR": "____ __~_ ",
+
+    "A___DAT": "____ ___~ ",
+    "C___DAT": "____ ___~ ",
+    "B___ADR": "____ ___~ ",
+    "D___ADR": "____ ___~ ",
+
+    # MUL
+    # 1001.
+    "ALY_CLR": "____ ~___ ", # COPY ALY <- A
+    "ALY_DAT": "____ _~__ ",
+    "A___DAT": "____ _~__ ",
+    # if B_LSB
+    "ALU ADD": "____ _~~~ ",
+    "ALZ CLR": "____ _~__ ",
+    "ALZ ALZ": "____ __~_ ",
+    "A___CLR": "____ __~_ ",
+    "ALZ DAT": "____ ___~ ",
+    "A___DAT": "____ ___~ ",
 
     # HALT
-    # 111'.''''.''''.''''
+    # 1111.''''.''''.''''
 }
-
-
-def tick(state):
-    assert not state["clock"]["halt"]:
-    st = dict(state)
-
-
-
-
 
 
 def get_bus(state, bus="DATA"):
@@ -175,7 +256,7 @@ def print_state(state, high_symbol="|", low_symbol="."):
 
     # registers
     # ---------
-    num_bits = len(state["registers"]["A"]["bits"])
+    num_bits = len(state["registers"]["ALZ"]["bits"])
     s += "__registers__" + " "*BITS + "int     uint      hex\n"
     for rkey in state["registers"]:
         rr = " [" + rkey
@@ -201,6 +282,27 @@ def print_state(state, high_symbol="|", low_symbol="."):
 
     # data bus
     print(s)
+
+    print("__memory__")
+    print(print_memory(mem=state["memory"]["bits"]))
+
+
+def print_memory(mem, num_words_in_row = 16):
+    num_words, num_bits = mem.shape
+    ss = io.StringIO()
+    for iword in range(num_words):
+        if iword == 0:
+            ss.write("{:4d} | ".format(iword + 1))
+        word = word_to_uint(mem[iword, :])
+        word_str = "{:04x}".format(word)
+        ss.write(word_str)
+        if iword > 0 and (iword + 1) % num_words_in_row == 0:
+            ss.write("\n")
+            ss.write("{:4d} | ".format(iword + 1))
+        else:
+            ss.write(" ")
+    ss.seek(0)
+    return ss.read()
 
 
 CLOCK_DAT_FREE = 4  # first clock instruction can use Data-bus
